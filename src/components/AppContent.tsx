@@ -1,4 +1,4 @@
-import { Apps, Cloud, HelpOutline, Settings } from "@mui/icons-material";
+import {  Cloud, HelpOutline, Settings } from "@mui/icons-material";
 import {
   AppBar,
   Avatar,
@@ -70,17 +70,7 @@ const AppContent: React.FC = () => {
             >
               <Settings />
             </IconButton>
-            <IconButton
-              size="small"
-              sx={{
-                color: "#5f6368",
-                "&:hover": {
-                  backgroundColor: "rgba(0, 0, 0, 0.04)",
-                },
-              }}
-            >
-              <Apps />
-            </IconButton>
+          
             <Box
               onClick={handleProfileClick}
               sx={{
