@@ -87,10 +87,10 @@ const FileContextMenu: FC<FileContextMenuProps> = ({
             }
             onClose();
           }}
-          sx={{ color: "error.main" }}
+         
         >
           <Delete sx={{ mr: 1 }} fontSize="small" />
-          Delete
+          Trash
         </MenuItem>
       )}
     </Menu>

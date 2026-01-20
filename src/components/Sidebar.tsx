@@ -82,8 +82,9 @@ const Sidebar: React.FC = () => {
         flexShrink: 0,
         '& .MuiDrawer-paper': {
           width: drawerWidth,
-          boxSizing: 'border-box',
-          borderRight: '1px solid rgba(0, 0, 0, 0.12)',
+          borderRight: 'none',
+          // boxSizing: 'border-box',
+          // borderRight: '1px solid rgba(0, 0, 0, 0.12)',
         },
       }}
     >
@@ -96,6 +97,7 @@ const Sidebar: React.FC = () => {
             gap: 1,
             p: 2,
             borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
+            
           }}
         >
           <Cloud sx={{ fontSize: 32, color: '#1976d2' }} />
@@ -268,16 +270,20 @@ const Sidebar: React.FC = () => {
         <Divider />
 
         {/* Navigation Menu */}
-        <List sx={{ flex: 1, pt: 1 }}>
+        <List  sx={{ flex: 1, py: 0.5, px:1.5 }}>
           {menuItems.map((item) => (
-            <ListItem key={item.view} disablePadding>
+            <ListItem  key={item.view} disablePadding>
               <ListItemButton
                 selected={currentView === item.view}
                 onClick={() => setCurrentView(item.view)}
                 sx={{
+                  py:0.5,
+                  px:1.5,
+
+                  borderRadius: 10,
                   '&.Mui-selected': {
                     backgroundColor: 'rgba(25, 118, 210, 0.08)',
-                    borderLeft: '3px solid #1976d2',
+                   
                     '&:hover': {
                       backgroundColor: 'rgba(25, 118, 210, 0.12)',
                     },

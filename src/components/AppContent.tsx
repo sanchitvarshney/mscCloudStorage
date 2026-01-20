@@ -13,10 +13,17 @@ import { useState } from "react";
 import SearchBar from "./reuseable/SearchBar";
 import Sidebar from "./Sidebar";
 import FileManager from "./FileManager";
+import OfflineContent from "./OfflineContent";
+import { useConnectivity } from "../hooks/useConnectivity";
 
 const AppContent: React.FC = () => {
   const [profileMenuAnchor, setProfileMenuAnchor] =
     useState<null | HTMLElement>(null);
+  const [settingsMenuAnchor, setSettingsMenuAnchor] =
+    useState<null | HTMLElement>(null);
+  const [helpMenuAnchor, setHelpMenuAnchor] =
+    useState<null | HTMLElement>(null);
+  const { isOnline } = useConnectivity();
 
   const handleProfileClick = (event: React.MouseEvent<HTMLElement>) => {
     setProfileMenuAnchor(event.currentTarget);
@@ -24,6 +31,22 @@ const AppContent: React.FC = () => {
 
   const handleProfileClose = () => {
     setProfileMenuAnchor(null);
+  };
+
+  const handleSettingsClick = (event: React.MouseEvent<HTMLElement>) => {
+    setSettingsMenuAnchor(event.currentTarget);
+  };
+
+  const handleSettingsClose = () => {
+    setSettingsMenuAnchor(null);
+  };
+
+  const handleHelpClick = (event: React.MouseEvent<HTMLElement>) => {
+    setHelpMenuAnchor(event.currentTarget);
+  };
+
+  const handleHelpClose = () => {
+    setHelpMenuAnchor(null);
   };
 
   return (
@@ -35,6 +58,8 @@ const AppContent: React.FC = () => {
           backgroundColor: "#fff",
           color: "#000",
           borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+          mt:  0,
+          transition: "margin-top 0.3s ease",
         }}
       >
         <Toolbar sx={{ gap: 2, justifyContent: "space-between", px: 3 }}>
@@ -50,6 +75,7 @@ const AppContent: React.FC = () => {
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <IconButton
               size="small"
+              onClick={handleHelpClick}
               sx={{
                 color: "#5f6368",
                 "&:hover": {
@@ -59,8 +85,28 @@ const AppContent: React.FC = () => {
             >
               <HelpOutline />
             </IconButton>
+            <Menu
+              anchorEl={helpMenuAnchor}
+              open={Boolean(helpMenuAnchor)}
+              onClose={handleHelpClose}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "right",
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+            >
+              {["Help Center", "Keyboard Shortcuts", "Send Feedback"].map((option) => (
+                <MenuItem key={option} onClick={handleHelpClose}>
+                  {option}
+                </MenuItem>
+              ))}
+            </Menu>
             <IconButton
               size="small"
+              onClick={handleSettingsClick}
               sx={{
                 color: "#5f6368",
                 "&:hover": {
@@ -70,6 +116,25 @@ const AppContent: React.FC = () => {
             >
               <Settings />
             </IconButton>
+            <Menu
+              anchorEl={settingsMenuAnchor}
+              open={Boolean(settingsMenuAnchor)}
+              onClose={handleSettingsClose}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "right",
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+            >
+              {["General", "Storage", "Privacy"].map((option) => (
+                <MenuItem key={option} onClick={handleSettingsClose}>
+                  {option}
+                </MenuItem>
+              ))}
+            </Menu>
           
             <Box
               onClick={handleProfileClick}
@@ -127,7 +192,7 @@ const AppContent: React.FC = () => {
             backgroundColor: "#f5f5f5",
           }}
         >
-          <FileManager />
+          {!isOnline ? <OfflineContent /> : <FileManager />}
         </Box>
       </Box>
     </Box>

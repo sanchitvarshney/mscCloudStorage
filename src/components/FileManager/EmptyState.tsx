@@ -18,13 +18,13 @@ const EmptyState: FC<EmptyStateProps> = ({ currentView }) => {
       }}
     >
       <img
-        src={"/trash.png"}
+        src={ currentView === "spam" ? "/spam.png" : "/trash.png"}
         alt="No Files"
         width={220}
         height={"auto"}
       />
       <Typography variant="h6" gutterBottom>
-        No files or folders
+        No Item Found!
       </Typography>
       <Typography variant="body2">
         {currentView === "sharedWithMe"

@@ -150,6 +150,12 @@ const FileManager: FC = () => {
     URL.revokeObjectURL(url);
   };
 
+  const handleView = (file: FileItem) => {
+    // Handle view action - could open file preview, navigate, etc.
+    console.log("View file:", file.name);
+    // You can implement file preview or navigation here
+  };
+
   const handleShare = (file: FileItem) => {
     setSelectedFile(file);
     setShareDialogOpen(true);
@@ -207,7 +213,12 @@ const FileManager: FC = () => {
               overflow: "auto",
             }}
           >
-            <FileGridView files={filteredFiles} onMenuClick={handleMenuClick} />
+            <FileGridView
+              files={filteredFiles}
+              onMenuClick={handleMenuClick}
+              onDownload={handleDownload}
+              onView={handleView}
+            />
           </Box>
         )}
       </Box>
