@@ -114,6 +114,7 @@ const Sidebar: React.FC = () => {
             onClick={handleNewClick}
             fullWidth
             sx={{
+              maxWidth: {sm: '100%', md: 150},
               textTransform: 'none',
               borderRadius: 2,
               py: 1,

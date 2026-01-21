@@ -27,7 +27,7 @@ const FileManager: FC = () => {
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
 
   useEffect(() => {
     const handleCreateFolder = () => {
@@ -151,9 +151,20 @@ const FileManager: FC = () => {
   };
 
   const handleView = (file: FileItem) => {
-    // Handle view action - could open file preview, navigate, etc.
-    console.log("View file:", file.name);
-    // You can implement file preview or navigation here
+    console.log(file)
+    
+    // var width = 1000;
+    // var height = 600;
+
+    // var left = window.screen.width / 2 - width / 2;
+    // var top = window.screen.height / 2 - height / 2;
+
+    // window.open(
+    //   file.type === "file" ? `/viewfile/${file.id}` : "/viewfolder/" + file.id,
+    //   "MsCorpres",
+    //   `width=${width},height=${height},top=${top},left=${left},status=1,scrollbars=1,location=0,resizable=yes`
+    // );
+ 
   };
 
   const handleShare = (file: FileItem) => {

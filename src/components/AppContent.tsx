@@ -2,8 +2,7 @@ import {
   Cloud,
   HelpOutline,
   Settings,
-  HelpCenter,
-  Keyboard,
+  HelpCenter as HelpCenterIcon,
   Feedback,
   Storage,
   Person,
@@ -23,9 +22,13 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import SearchBar from "./reuseable/SearchBar";
+import RightDrawer from "./reuseable/RightDrawer";
 import Sidebar from "./Sidebar";
 import FileManager from "./FileManager";
 import OfflineContent from "./OfflineContent";
+import HelpCenter from "./HelpCenter";
+import SendFeedbackDialog from "./SendFeedbackDialog";
+import Profile from "./Profile";
 import { useConnectivity } from "../hooks/useConnectivity";
 
 const AppContent: React.FC = () => {
@@ -35,6 +38,9 @@ const AppContent: React.FC = () => {
     useState<null | HTMLElement>(null);
   const [helpMenuAnchor, setHelpMenuAnchor] =
     useState<null | HTMLElement>(null);
+  const [helpDrawerOpen, setHelpDrawerOpen] = useState(false);
+  const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
+  const [profileDrawerOpen, setProfileDrawerOpen] = useState(false);
   const { isOnline } = useConnectivity();
 
   const handleProfileClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -110,38 +116,62 @@ const AppContent: React.FC = () => {
                 horizontal: "right",
               }}
             >
-              {[
-                { label: "Help Center", icon: <HelpCenter /> },
-                { label: "Keyboard Shortcuts", icon: <Keyboard /> },
-                { label: "Send Feedback", icon: <Feedback /> },
-              ].map((option) => (
-                <MenuItem
-                  key={option.label}
-                  onClick={handleHelpClose}
-                  sx={{
+              <MenuItem
+                onClick={() => {
+                  handleHelpClose();
+                  setHelpDrawerOpen(true);
+                }}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "#e3f2fd",
+                  },
+                  "&.Mui-selected": {
+                    backgroundColor: "#1976d2",
+                    color: "#fff",
                     "&:hover": {
-                      backgroundColor: "#e3f2fd",
+                      backgroundColor: "#1565c0",
                     },
-                    "&.Mui-selected": {
-                      backgroundColor: "#1976d2",
-                      color: "#fff",
-                      "&:hover": {
-                        backgroundColor: "#1565c0",
-                      },
-                    },
+                  },
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 36,
+                    color: "inherit",
                   }}
                 >
-                  <ListItemIcon
-                    sx={{
-                      minWidth: 36,
-                      color: "inherit",
-                    }}
-                  >
-                    {option.icon}
-                  </ListItemIcon>
-                  {option.label}
-                </MenuItem>
-              ))}
+                  <HelpCenterIcon />
+                </ListItemIcon>
+                Help Center
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  handleHelpClose();
+                  setFeedbackDialogOpen(true);
+                }}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "#e3f2fd",
+                  },
+                  "&.Mui-selected": {
+                    backgroundColor: "#1976d2",
+                    color: "#fff",
+                    "&:hover": {
+                      backgroundColor: "#1565c0",
+                    },
+                  },
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 36,
+                    color: "inherit",
+                  }}
+                >
+                  <Feedback />
+                </ListItemIcon>
+                Send Feedback
+              </MenuItem>
             </Menu>
             <IconButton
               size="small"
@@ -239,38 +269,84 @@ const AppContent: React.FC = () => {
                 horizontal: "right",
               }}
             >
-              {[
-                { label: "Profile", icon: <Person /> },
-                { label: "Settings", icon: <Settings /> },
-                { label: "Sign out", icon: <Logout /> },
-              ].map((option) => (
-                <MenuItem
-                  key={option.label}
-                  onClick={handleProfileClose}
-                  sx={{
+              <MenuItem
+                onClick={() => {
+                  handleProfileClose();
+                  setProfileDrawerOpen(true);
+                }}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "#e3f2fd",
+                  },
+                  "&.Mui-selected": {
+                    backgroundColor: "#1976d2",
+                    color: "#fff",
                     "&:hover": {
-                      backgroundColor: "#e3f2fd",
+                      backgroundColor: "#1565c0",
                     },
-                    "&.Mui-selected": {
-                      backgroundColor: "#1976d2",
-                      color: "#fff",
-                      "&:hover": {
-                        backgroundColor: "#1565c0",
-                      },
-                    },
+                  },
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 36,
+                    color: "inherit",
                   }}
                 >
-                  <ListItemIcon
-                    sx={{
-                      minWidth: 36,
-                      color: "inherit",
-                    }}
-                  >
-                    {option.icon}
-                  </ListItemIcon>
-                  {option.label}
-                </MenuItem>
-              ))}
+                  <Person />
+                </ListItemIcon>
+                Profile
+              </MenuItem>
+              <MenuItem
+                onClick={handleProfileClose}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "#e3f2fd",
+                  },
+                  "&.Mui-selected": {
+                    backgroundColor: "#1976d2",
+                    color: "#fff",
+                    "&:hover": {
+                      backgroundColor: "#1565c0",
+                    },
+                  },
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 36,
+                    color: "inherit",
+                  }}
+                >
+                  <Settings />
+                </ListItemIcon>
+                Settings
+              </MenuItem>
+              <MenuItem
+                onClick={handleProfileClose}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "#e3f2fd",
+                  },
+                  "&.Mui-selected": {
+                    backgroundColor: "#1976d2",
+                    color: "#fff",
+                    "&:hover": {
+                      backgroundColor: "#1565c0",
+                    },
+                  },
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 36,
+                    color: "inherit",
+                  }}
+                >
+                  <Logout />
+                </ListItemIcon>
+                Sign out
+              </MenuItem>
             </Menu>
           </Box>
         </Toolbar>
@@ -288,6 +364,32 @@ const AppContent: React.FC = () => {
           {!isOnline ? <OfflineContent /> : <FileManager />}
         </Box>
       </Box>
+
+      {/* Help Center Drawer */}
+      <RightDrawer
+        open={helpDrawerOpen}
+        onClose={() => setHelpDrawerOpen(false)}
+        title="Help Center"
+        width={480}
+      >
+        <HelpCenter />
+      </RightDrawer>
+
+      {/* Send Feedback Dialog */}
+      <SendFeedbackDialog
+        open={feedbackDialogOpen}
+        onClose={() => setFeedbackDialogOpen(false)}
+      />
+
+      {/* Profile Drawer */}
+      <RightDrawer
+        open={profileDrawerOpen}
+        onClose={() => setProfileDrawerOpen(false)}
+        title="Account Details"
+        width={600}
+      >
+        <Profile />
+      </RightDrawer>
     </Box>
   );
 };

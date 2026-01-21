@@ -21,7 +21,7 @@ const CreateFolderDialog: FC<CreateFolderDialogProps> = ({
   onCreate,
 }) => {
   const [newFolderName, setNewFolderName] = useState("Unnamed Folder");
-  const folderInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<any>(null);
   const [inputElement, setInputElement] = useState<HTMLInputElement | null>(
     null,
   );
@@ -79,6 +79,7 @@ const CreateFolderDialog: FC<CreateFolderDialogProps> = ({
     <Dialog
       open={open}
       onClose={onClose}
+      //@ts-ignore
       onEntered={() => {
         focusAndSelectInput();
       }}

@@ -18,18 +18,30 @@ const EmptyState: FC<EmptyStateProps> = ({ currentView }) => {
       }}
     >
       <img
-        src={ currentView === "spam" ? "/spam.png" : "/trash.png"}
+        src={
+          currentView === "spam"
+            ? "/spam.png"
+            : currentView === "trash"
+              ? "/trash.png"
+              : "/empty-cart.png"
+        }
         alt="No Files"
         width={220}
         height={"auto"}
       />
       <Typography variant="h6" gutterBottom>
-        No Item Found!
+        {currentView === "trash"
+          ? "Trash is Empty"
+          : currentView === "spam"
+            ? "Your Spam is Empty"
+            : "Your Drive is Empty"}
       </Typography>
       <Typography variant="body2">
-        {currentView === "sharedWithMe"
-          ? "Files shared with you will appear here"
-          : "Upload files or create folders to get started"}
+        {currentView === "trash"
+          ? "Items in the Trash will be deleted permanently after 30 days"
+          : currentView === "spam"
+            ? "Files in spam won't appear anywhere else in Drive. Files are permanently removed after 30 days "
+            : "Oh no! Looks like you don't have any files or folders."}
       </Typography>
     </Box>
   );

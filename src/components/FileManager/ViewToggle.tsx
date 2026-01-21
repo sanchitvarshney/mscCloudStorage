@@ -34,6 +34,13 @@ const ViewToggle: FC<ViewToggleProps> = ({ viewMode, onViewChange }) => {
         },
       }}
     >
+          <ToggleButton value="grid" disableRipple>
+        <AnimatedIcon active={viewMode === "grid"}>
+          <ViewModule
+            sx={{ color: viewMode === "grid" ? "#fff" : "#5f6368" }}
+          />
+        </AnimatedIcon>
+      </ToggleButton>
       <ToggleButton value="list" disableRipple>
         <AnimatedIcon active={viewMode === "list"}>
           <ViewList
@@ -41,13 +48,7 @@ const ViewToggle: FC<ViewToggleProps> = ({ viewMode, onViewChange }) => {
           />
         </AnimatedIcon>
       </ToggleButton>
-      <ToggleButton value="grid" disableRipple>
-        <AnimatedIcon active={viewMode === "grid"}>
-          <ViewModule
-            sx={{ color: viewMode === "grid" ? "#fff" : "#5f6368" }}
-          />
-        </AnimatedIcon>
-      </ToggleButton>
+  
     </ToggleButtonGroup>
   );
 };
