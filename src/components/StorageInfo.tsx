@@ -20,8 +20,10 @@ const StorageInfo: React.FC = () => {
     <Paper
       elevation={0}
       sx={{
-        p: 2,
-        m: 2,
+        py: 2,
+        px:4,
+
+        // m: 2,
         backgroundColor: 'rgba(0, 0, 0, 0.02)',
         borderRadius: 2,
    

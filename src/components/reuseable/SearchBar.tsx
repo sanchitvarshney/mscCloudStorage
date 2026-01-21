@@ -3,30 +3,20 @@ import { useFileContext } from "../../context/FileContext";
 import {
   IconButton,
   InputBase,
-  Menu,
-  MenuItem,
   Paper,
   Box,
   Chip,
 } from "@mui/material";
-import { Search, Tune, Close } from "@mui/icons-material";
+import { Search, Close } from "@mui/icons-material";
 import SearchDropdown from "./SearchDropdown";
 
 const SearchBar: React.FC = () => {
   const { searchQuery, setSearchQuery, files } = useFileContext();
-  const [filterAnchor, setFilterAnchor] = useState<null | HTMLElement>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
   const searchBarRef = useRef<HTMLDivElement>(null);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const handleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setFilterAnchor(event.currentTarget);
-  };
-
-  const handleFilterClose = () => {
-    setFilterAnchor(null);
-  };
 
   useEffect(() => {
     setShowDropdown(isFocused && (searchQuery.length > 0 || selectedPerson !== null));
@@ -177,43 +167,7 @@ const SearchBar: React.FC = () => {
             <Close sx={{ fontSize: 20 }} />
           </IconButton>
         )}
-        <IconButton
-          size="small"
-          onClick={handleFilterClick}
-          sx={{
-            color: "#5f6368",
-            width: 40,
-            height: 40,
-            mr: 0.5,
-            border: "1px solid rgba(0, 0, 0, 0.12)",
-            borderRadius: "50%",
-            "&:hover": {
-              backgroundColor: "rgba(0, 0, 0, 0.04)",
-              borderColor: "rgba(0, 0, 0, 0.2)",
-            },
-          }}
-        >
-          <Tune sx={{ fontSize: 20 }} />
-        </IconButton>
-        <Menu
-          anchorEl={filterAnchor}
-          open={Boolean(filterAnchor)}
-          onClose={handleFilterClose}
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "right",
-          }}
-          transformOrigin={{
-            vertical: "top",
-            horizontal: "right",
-          }}
-        >
-          {["File type", "Date modified", "Owner"].map((option) => (
-            <MenuItem key={option} onClick={handleFilterClose}>
-              {option}
-            </MenuItem>
-          ))}
-        </Menu>
+      
       </Paper>
       {showDropdown && (
         <SearchDropdown

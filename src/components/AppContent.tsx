@@ -1,4 +1,15 @@
-import {  Cloud, HelpOutline, Settings } from "@mui/icons-material";
+import {
+  Cloud,
+  HelpOutline,
+  Settings,
+  HelpCenter,
+  Keyboard,
+  Feedback,
+  Storage,
+  Person,
+  Logout,
+  PrivacyTip,
+} from "@mui/icons-material";
 import {
   AppBar,
   Avatar,
@@ -6,6 +17,7 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  ListItemIcon,
   Toolbar,
   Typography,
 } from "@mui/material";
@@ -98,9 +110,36 @@ const AppContent: React.FC = () => {
                 horizontal: "right",
               }}
             >
-              {["Help Center", "Keyboard Shortcuts", "Send Feedback"].map((option) => (
-                <MenuItem key={option} onClick={handleHelpClose}>
-                  {option}
+              {[
+                { label: "Help Center", icon: <HelpCenter /> },
+                { label: "Keyboard Shortcuts", icon: <Keyboard /> },
+                { label: "Send Feedback", icon: <Feedback /> },
+              ].map((option) => (
+                <MenuItem
+                  key={option.label}
+                  onClick={handleHelpClose}
+                  sx={{
+                    "&:hover": {
+                      backgroundColor: "#e3f2fd",
+                    },
+                    "&.Mui-selected": {
+                      backgroundColor: "#1976d2",
+                      color: "#fff",
+                      "&:hover": {
+                        backgroundColor: "#1565c0",
+                      },
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 36,
+                      color: "inherit",
+                    }}
+                  >
+                    {option.icon}
+                  </ListItemIcon>
+                  {option.label}
                 </MenuItem>
               ))}
             </Menu>
@@ -129,9 +168,36 @@ const AppContent: React.FC = () => {
                 horizontal: "right",
               }}
             >
-              {["General", "Storage", "Privacy"].map((option) => (
-                <MenuItem key={option} onClick={handleSettingsClose}>
-                  {option}
+              {[
+                { label: "General", icon: <Settings /> },
+                { label: "Storage", icon: <Storage /> },
+                { label: "Privacy", icon: <PrivacyTip /> },
+              ].map((option) => (
+                <MenuItem
+                  key={option.label}
+                  onClick={handleSettingsClose}
+                  sx={{
+                    "&:hover": {
+                      backgroundColor: "#e3f2fd",
+                    },
+                    "&.Mui-selected": {
+                      backgroundColor: "#1976d2",
+                      color: "#fff",
+                      "&:hover": {
+                        backgroundColor: "#1565c0",
+                      },
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 36,
+                      color: "inherit",
+                    }}
+                  >
+                    {option.icon}
+                  </ListItemIcon>
+                  {option.label}
                 </MenuItem>
               ))}
             </Menu>
@@ -173,9 +239,36 @@ const AppContent: React.FC = () => {
                 horizontal: "right",
               }}
             >
-              {["Profile", "Settings", "Sign out"].map((option) => (
-                <MenuItem key={option} onClick={handleProfileClose}>
-                  {option}
+              {[
+                { label: "Profile", icon: <Person /> },
+                { label: "Settings", icon: <Settings /> },
+                { label: "Sign out", icon: <Logout /> },
+              ].map((option) => (
+                <MenuItem
+                  key={option.label}
+                  onClick={handleProfileClose}
+                  sx={{
+                    "&:hover": {
+                      backgroundColor: "#e3f2fd",
+                    },
+                    "&.Mui-selected": {
+                      backgroundColor: "#1976d2",
+                      color: "#fff",
+                      "&:hover": {
+                        backgroundColor: "#1565c0",
+                      },
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 36,
+                      color: "inherit",
+                    }}
+                  >
+                    {option.icon}
+                  </ListItemIcon>
+                  {option.label}
                 </MenuItem>
               ))}
             </Menu>

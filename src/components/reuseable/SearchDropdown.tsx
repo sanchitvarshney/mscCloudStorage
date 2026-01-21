@@ -93,6 +93,7 @@ const SearchDropdown: FC<SearchDropdownProps> = ({
 
   return (
     <Paper
+    elevation={0}
       sx={{
         position: "absolute",
         top: "100%",
