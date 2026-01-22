@@ -20,18 +20,19 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import SearchBar from "./reuseable/SearchBar";
 import RightDrawer from "./reuseable/RightDrawer";
 import Sidebar from "./Sidebar";
-import FileManager from "./FileManager";
-import OfflineContent from "./OfflineContent";
 import HelpCenter from "./HelpCenter";
 import SendFeedbackDialog from "./SendFeedbackDialog";
-import Profile from "./Profile";
 import { useConnectivity } from "../hooks/useConnectivity";
+import Profile from "./Profile";
 
 const AppContent: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [profileMenuAnchor, setProfileMenuAnchor] =
     useState<null | HTMLElement>(null);
   const [settingsMenuAnchor, setSettingsMenuAnchor] =
@@ -42,6 +43,12 @@ const AppContent: React.FC = () => {
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
   const [profileDrawerOpen, setProfileDrawerOpen] = useState(false);
   const { isOnline } = useConnectivity();
+
+  useEffect(() => {
+    if (!isOnline && location.pathname !== "/offline") {
+      navigate("/offline");
+    }
+  }, [isOnline, location.pathname, navigate]);
 
   const handleProfileClick = (event: React.MouseEvent<HTMLElement>) => {
     setProfileMenuAnchor(event.currentTarget);
@@ -323,7 +330,10 @@ const AppContent: React.FC = () => {
                 Settings
               </MenuItem>
               <MenuItem
-                onClick={handleProfileClose}
+                onClick={() => {
+                  handleProfileClose();
+                  navigate("/signin");
+                }}
                 sx={{
                   "&:hover": {
                     backgroundColor: "#e3f2fd",
@@ -361,7 +371,7 @@ const AppContent: React.FC = () => {
             backgroundColor: "#f5f5f5",
           }}
         >
-          {!isOnline ? <OfflineContent /> : <FileManager />}
+          <Outlet />
         </Box>
       </Box>
 

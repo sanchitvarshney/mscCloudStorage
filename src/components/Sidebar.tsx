@@ -27,14 +27,16 @@ import {
   Folder,
 } from '@mui/icons-material';
 import { Cloud } from '@mui/icons-material';
-import { useFileContext } from '../context/FileContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ViewType } from '../types';
+import { getRouteFromView, getViewFromRoute } from '../utils/routeMapping';
 import StorageInfo from './StorageInfo';
 
 const drawerWidth = 280;
 
 const Sidebar: React.FC = () => {
-  const { currentView, setCurrentView } = useFileContext();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [newMenuAnchor, setNewMenuAnchor] = useState<null | HTMLElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
@@ -272,37 +274,48 @@ const Sidebar: React.FC = () => {
 
         {/* Navigation Menu */}
         <List  sx={{ flex: 1, py: 0.5, px:1.5 }}>
-          {menuItems.map((item) => (
-            <ListItem  key={item.view} disablePadding>
-              <ListItemButton
-                selected={currentView === item.view}
-                onClick={() => setCurrentView(item.view)}
-                sx={{
-                  py:0.5,
-                  px:1.5,
-
-                  borderRadius: 10,
-                  '&.Mui-selected': {
-                    backgroundColor: 'rgba(25, 118, 210, 0.08)',
-                   
-                    '&:hover': {
-                      backgroundColor: 'rgba(25, 118, 210, 0.12)',
-                    },
-                  },
-                }}
-              >
-                <ListItemIcon
+          {menuItems.map((item) => {
+            const route = getRouteFromView(item.view);
+            // Get current route from location
+            const currentRoute = location.pathname.split('/').filter(Boolean)[0] || 'home';
+            const routeView = getViewFromRoute(currentRoute);
+            const isSelected = routeView === item.view;
+            
+            return (
+              <ListItem  key={item.view} disablePadding>
+                <ListItemButton
+                  selected={isSelected}
+                  onClick={() => {
+             
+                    navigate(`/${route}`);
+                  }}
                   sx={{
-                    color: currentView === item.view ? '#1976d2' : 'inherit',
-                    minWidth: 40,
+                    py:0.5,
+                    px:1.5,
+
+                    borderRadius: 10,
+                    '&.Mui-selected': {
+                      backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                     
+                      '&:hover': {
+                        backgroundColor: 'rgba(25, 118, 210, 0.12)',
+                      },
+                    },
                   }}
                 >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText primary={item.label} />
-              </ListItemButton>
-            </ListItem>
-          ))}
+                  <ListItemIcon
+                    sx={{
+                      color: isSelected ? '#1976d2' : 'inherit',
+                      minWidth: 40,
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText primary={item.label} />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
         </List>
         <Divider />
         <StorageInfo />
