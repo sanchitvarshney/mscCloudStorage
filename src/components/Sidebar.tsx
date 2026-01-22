@@ -184,7 +184,7 @@ const Sidebar: React.FC = () => {
               },
             }}
           >
-            <ListItemIcon sx={{ minWidth: 40 }}>
+            <ListItemIcon >
               <CreateNewFolder fontSize="small" />
             </ListItemIcon>
             <ListItemText 
@@ -194,7 +194,7 @@ const Sidebar: React.FC = () => {
                 sx: { fontWeight: 400 },
               }}
             />
-            <Typography 
+            {/* <Typography 
               variant="caption" 
               color="text.secondary"
               sx={{ 
@@ -204,7 +204,7 @@ const Sidebar: React.FC = () => {
               }}
             >
               Alt+C then F
-            </Typography>
+            </Typography> */}
           </MenuItem>
           <MenuItem 
             onClick={handleFileUpload}
@@ -215,7 +215,7 @@ const Sidebar: React.FC = () => {
               },
             }}
           >
-            <ListItemIcon sx={{ minWidth: 40 }}>
+            <ListItemIcon >
               <UploadFile fontSize="small" />
             </ListItemIcon>
             <ListItemText 
@@ -225,17 +225,7 @@ const Sidebar: React.FC = () => {
                 sx: { fontWeight: 400 },
               }}
             />
-            <Typography 
-              variant="caption" 
-              color="text.secondary"
-              sx={{ 
-                ml: 'auto',
-                fontSize: '0.75rem',
-                fontFamily: 'monospace',
-              }}
-            >
-              Alt+C then U
-            </Typography>
+           
           </MenuItem>
           <MenuItem 
             onClick={handleFolderUpload}
@@ -246,7 +236,7 @@ const Sidebar: React.FC = () => {
               },
             }}
           >
-            <ListItemIcon sx={{ minWidth: 40 }}>
+            <ListItemIcon >
               <Folder fontSize="small" />
             </ListItemIcon>
             <ListItemText 
@@ -256,17 +246,7 @@ const Sidebar: React.FC = () => {
                 sx: { fontWeight: 400 },
               }}
             />
-            <Typography 
-              variant="caption" 
-              color="text.secondary"
-              sx={{ 
-                ml: 'auto',
-                fontSize: '0.75rem',
-                fontFamily: 'monospace',
-              }}
-            >
-              Alt+C then I
-            </Typography>
+           
           </MenuItem>
         </Menu>
 
