@@ -15,7 +15,6 @@ const Login = () => {
     const data: any = {
       credential: googleResponse.credential,
     };
-    console.log(data,"data")
     loginGoogle(data)
       .unwrap()
       .then((res: any) => {

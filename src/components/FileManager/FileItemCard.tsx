@@ -17,6 +17,7 @@ interface FileItemCardProps {
   onMenuClick: (event: React.MouseEvent, file: FileItem) => void;
   onDownload?: (file: FileItem) => void;
   onView?: (file: FileItem) => void;
+  onClickFolder?: (file: FileItem) => void;
 }
 
 const FileItemCard: FC<FileItemCardProps> = ({
@@ -42,6 +43,11 @@ const FileItemCard: FC<FileItemCardProps> = ({
   };
   return (
     <Card
+    onClick={() => {
+      if (file.type === "folder") {
+        // onClickFolder(file);
+      }
+    }}
       sx={{
         boxShadow: "none",
         height: "100%",
@@ -122,7 +128,9 @@ const FileItemCard: FC<FileItemCardProps> = ({
           )}
         </Box>
 
-        <Box
+       {
+        file.type === "file"  && (
+           <Box
           sx={{
             position: "absolute",
             top: 0,
@@ -191,6 +199,8 @@ const FileItemCard: FC<FileItemCardProps> = ({
             </Box>
           )}
         </Box>
+        )
+       }
       </CardContent>
     </Card>
   );

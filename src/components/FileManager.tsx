@@ -9,14 +9,17 @@ import FileContextMenu from "./FileManager/FileContextMenu";
 import CreateFolderDialog from "./FileManager/CreateFolderDialog";
 import ShareDialog from "./FileManager/ShareDialog";
 import EmptyState from "./FileManager/EmptyState";
+import {
+  useCreateFolderMutation,
+  useFetchFilesQuery,
+} from "../services/dirManager/dirServices";
 
 const FileManager: FC = () => {
   const {
-    files,
+  
     currentView,
     searchQuery,
     addFile,
-    addFolder,
     deleteFile,
     shareFile,
     toggleFavourite,
@@ -27,7 +30,24 @@ const FileManager: FC = () => {
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const [driveData, setDriveData] = useState<any[]>([]);
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
+  const [createFolder, { isLoading: isFolderCreating }] =
+    useCreateFolderMutation();
+  const { refetch, isLoading, data } = useFetchFilesQuery({
+    refetchOnMountOrArgChange: true,
+  });
+
+  console.log(driveData)
+
+
+  useEffect(() => {
+   if ( data?.data?.foldersArr.length > 0 || data?.data?.filesArr.length > 0) {
+    setDriveData([...data?.data?.filesArr, ...data?.data?.foldersArr]);
+    
+   }
+  }, [data?.data?.files, data?.data?.foldersArr]);
+  
 
   useEffect(() => {
     const handleCreateFolder = () => {
@@ -97,7 +117,7 @@ const FileManager: FC = () => {
     });
   };
 
-  const filteredFiles = files.filter((file) => {
+  const filteredFiles = driveData?.filter((file:any) => {
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
@@ -132,10 +152,30 @@ const FileManager: FC = () => {
   });
 
   const handleCreateFolder = (name: string) => {
-    if (name.trim()) {
-      addFolder(name.trim());
-      setFolderDialogOpen(false);
-    }
+    createFolder({ name })
+      .unwrap()
+      .then((res: any) => {
+        console.log(res, "response");
+        if (res?.success) {
+          setFolderDialogOpen(false);
+        } else {
+          // showToast(res?.message, "error");
+          console.log(res, "res");
+        }
+      })
+      .catch((err: any) => {
+        console.log(err, "res");
+        // showToast(
+        //   err?.data?.message ||
+        //     err?.message ||
+        //     "We're Sorry An unexpected error has occured. Our technical staff has been automatically notified and will be looking into this with utmost urgency.",
+        //   "error",
+        // );
+      });
+    // if (name.trim()) {
+    //   addFolder(name.trim());
+
+    // }
   };
 
   const handleDownload = (file: FileItem) => {
@@ -151,8 +191,8 @@ const FileManager: FC = () => {
   };
 
   const handleView = (file: FileItem) => {
-    console.log(file)
-    
+    console.log(file);
+
     // var width = 1000;
     // var height = 600;
 
@@ -164,7 +204,6 @@ const FileManager: FC = () => {
     //   "MsCorpres",
     //   `width=${width},height=${height},top=${top},left=${left},status=1,scrollbars=1,location=0,resizable=yes`
     // );
- 
   };
 
   const handleShare = (file: FileItem) => {
@@ -251,6 +290,7 @@ const FileManager: FC = () => {
         open={folderDialogOpen}
         onClose={() => setFolderDialogOpen(false)}
         onCreate={handleCreateFolder}
+        isCreating={isFolderCreating}
       />
 
       <ShareDialog

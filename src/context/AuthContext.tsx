@@ -20,7 +20,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const storedUser = JSON.parse(storedUserStr);
 
       const userData = {
-        name: storedUser.userName,
+        name: storedUser.username,
       };
 
       setUser(userData);

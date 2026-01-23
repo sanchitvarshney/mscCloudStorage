@@ -134,8 +134,18 @@ const Sidebar: React.FC = () => {
             style={{ display: 'none' }}
             multiple
             onChange={(e) => {
-              const event = new CustomEvent('fileUpload', { detail: e.target.files });
-              window.dispatchEvent(event);
+              const files = e.target.files;
+              if (files && files.length > 0) {
+                const formData = new FormData();
+                Array.from(files).forEach((file) => {
+                  formData.append('files', file);
+                });
+                
+                const event = new CustomEvent('fileUpload', { 
+                  detail: { files, formDataCreated: true } 
+                });
+                window.dispatchEvent(event);
+              }
               if (fileInputRef.current) fileInputRef.current.value = '';
             }}
           />

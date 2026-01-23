@@ -7,18 +7,21 @@ import {
   TextField,
   Button,
   Box,
+  CircularProgress,
 } from "@mui/material";
 
 interface CreateFolderDialogProps {
   open: boolean;
   onClose: () => void;
   onCreate: (name: string) => void;
+  isCreating: boolean;
 }
 
 const CreateFolderDialog: FC<CreateFolderDialogProps> = ({
   open,
   onClose,
   onCreate,
+  isCreating
 }) => {
   const [newFolderName, setNewFolderName] = useState("Unnamed Folder");
   const folderInputRef = useRef<any>(null);
@@ -71,7 +74,7 @@ const CreateFolderDialog: FC<CreateFolderDialogProps> = ({
     if (newFolderName.trim()) {
       onCreate(newFolderName.trim());
       setNewFolderName("Unnamed Folder");
-      onClose();
+      
     }
   };
 
@@ -124,7 +127,7 @@ const CreateFolderDialog: FC<CreateFolderDialogProps> = ({
       </DialogContent>
       <DialogActions sx={{ px: 0, py: 1, mt: 0.5 }}>
         <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleCreate} variant="contained">
+        <Button disabled={isCreating} startIcon={ isCreating && <CircularProgress size={20} color="inherit" />} onClick={handleCreate} variant="contained">
           Create
         </Button>
       </DialogActions>

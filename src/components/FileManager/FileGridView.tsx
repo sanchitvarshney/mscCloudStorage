@@ -8,6 +8,7 @@ interface FileGridViewProps {
   onMenuClick: (event: React.MouseEvent, file: FileItem) => void;
   onDownload?: (file: FileItem) => void;
   onView?: (file: FileItem) => void;
+  onClickFolder?: (file: FileItem) => void
 }
 
 const FileGridView: FC<FileGridViewProps> = ({
@@ -15,6 +16,7 @@ const FileGridView: FC<FileGridViewProps> = ({
   onMenuClick,
   onDownload,
   onView,
+  onClickFolder
 }) => {
   return (
     <Grid container spacing={2} sx={{ p: 1 }}>
@@ -25,6 +27,7 @@ const FileGridView: FC<FileGridViewProps> = ({
             onMenuClick={onMenuClick}
             onDownload={onDownload}
             onView={onView}
+            onClickFolder={onClickFolder}
           />
         </Grid>
       ))}

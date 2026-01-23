@@ -1,15 +1,40 @@
-import { LinearProgress, Typography } from "@mui/material";
+import { Box, LinearProgress, Typography } from "@mui/material";
 
 const AppLoader = () => {
   return (
-    <div className="h-screen flex flex-col items-center justify-center w-full  bg-white">
-      <img src={"/mscorpres_auto_logo.png"} alt="Mscorpres Logo" className="w-[500px] opacity-50" />
+    <Box
+      sx={{
+        height: "100vh",
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#fff",
+      }}
+    >
+      <Box
+        component="img"
+        src="/mscorpres_auto_logo.png"
+        alt="Mscorpres Logo"
+        sx={{
+          width: { xs: "150px", sm: "100px", md: "120px" },
+          opacity: 0.5,
+        }}
+      />
 
-      <LinearProgress sx={{ width: "500px", height: "5px", mt: 2 }} />
+      <LinearProgress
+        sx={{
+          width: { xs: "50%", sm: "40%", md: "30%" },
+          height: "5px",
+          mt: 2,
+        }}
+      />
+
       <Typography variant="h6" sx={{ mt: 4 }}>
-        Loading ESS Portal
+        Loading MSC Drive ...
       </Typography>
-    </div>
+    </Box>
   );
 };
 

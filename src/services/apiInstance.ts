@@ -18,7 +18,7 @@ const baseQueryWithReauth: BaseQueryFn = async (args, api, extraOptions) => {
       const user = localStorage.getItem("user");
       const token = user ? JSON.parse(user).token : null;
       if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
+        headers.set("x-csrf-token", `${token}`);
       }
 
       return headers;
@@ -29,9 +29,8 @@ const baseQueryWithReauth: BaseQueryFn = async (args, api, extraOptions) => {
 
   if (result.error && result.error.status === 401) {
     localStorage.removeItem("user");
-    sessionStorage.removeItem("user");
 
-    window.location.href = "/sign-in";
+    window.location.href = "/signin";
   }
 
   return result;

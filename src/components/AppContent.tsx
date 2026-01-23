@@ -262,7 +262,7 @@ const { user, signOut } =  useAuth();
                   fontSize: "14px",
                 }}
               >
-                {user?.name ?? "U"}
+                {user?.name?.[0] ?? "U"}
               </Avatar>
             </Box>
             <Menu
