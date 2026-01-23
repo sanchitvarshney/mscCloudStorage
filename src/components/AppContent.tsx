@@ -29,8 +29,10 @@ import HelpCenter from "./HelpCenter";
 import SendFeedbackDialog from "./SendFeedbackDialog";
 import { useConnectivity } from "../hooks/useConnectivity";
 import Profile from "./Profile";
+import { useAuth } from "../hooks/AuthHook";
 
 const AppContent: React.FC = () => {
+const { user, signOut } =  useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [profileMenuAnchor, setProfileMenuAnchor] =
@@ -260,7 +262,7 @@ const AppContent: React.FC = () => {
                   fontSize: "14px",
                 }}
               >
-                U
+                {user?.name ?? "U"}
               </Avatar>
             </Box>
             <Menu
@@ -332,7 +334,7 @@ const AppContent: React.FC = () => {
               <MenuItem
                 onClick={() => {
                   handleProfileClose();
-                  navigate("/signin");
+                  signOut();
                 }}
                 sx={{
                   "&:hover": {

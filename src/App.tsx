@@ -7,6 +7,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import HomePage from "./pages/HomePage";
 
 import OfflinePage from "./pages/OfflinePage";
+import Protected from "./components/Protected";
 
 const App: React.FC = () => {
   return (
@@ -15,7 +16,14 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/signin" element={<SignInPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/" element={<AppContent />}>
+          <Route
+            path="/"
+            element={
+              <Protected>
+                <AppContent />
+              </Protected>
+            }
+          >
             <Route index element={<Navigate to="/home" replace />} />
             <Route path="home" element={<HomePage />} />
             <Route path="my-drive" element={<HomePage />} />
@@ -24,7 +32,7 @@ const App: React.FC = () => {
             <Route path="starred" element={<HomePage />} />
             <Route path="spam" element={<HomePage />} />
             <Route path="trash" element={<HomePage />} />
-         
+
             <Route path="offline" element={<OfflinePage />} />
           </Route>
         </Routes>
