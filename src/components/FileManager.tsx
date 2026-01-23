@@ -12,11 +12,13 @@ import EmptyState from "./FileManager/EmptyState";
 import {
   useCreateFolderMutation,
   useFetchFilesQuery,
+  useUploadFilesMutation,
 } from "../services/dirManager/dirServices";
+import { useNavigate } from "react-router-dom";
 
 const FileManager: FC = () => {
+  const   navigate = useNavigate();
   const {
-  
     currentView,
     searchQuery,
     addFile,
@@ -34,20 +36,20 @@ const FileManager: FC = () => {
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
   const [createFolder, { isLoading: isFolderCreating }] =
     useCreateFolderMutation();
-  const { refetch, isLoading, data } = useFetchFilesQuery({
+  const [uploadFiles, { isLoading: isUploading }] = useUploadFilesMutation();
+  const { refetch, isLoading, data } = useFetchFilesQuery("", {
     refetchOnMountOrArgChange: true,
   });
 
-  console.log(driveData)
-
+const  handleClickFolder = (folder: any) => {
+navigate(`/home/${folder.id}`);
+}
 
   useEffect(() => {
-   if ( data?.data?.foldersArr.length > 0 || data?.data?.filesArr.length > 0) {
-    setDriveData([...data?.data?.filesArr, ...data?.data?.foldersArr]);
-    
-   }
+    if (data?.data?.foldersArr.length > 0 || data?.data?.filesArr.length > 0) {
+      setDriveData([...data?.data?.filesArr, ...data?.data?.foldersArr]);
+    }
   }, [data?.data?.files, data?.data?.foldersArr]);
-  
 
   useEffect(() => {
     const handleCreateFolder = () => {
@@ -55,9 +57,20 @@ const FileManager: FC = () => {
     };
 
     const handleFileUpload = (event: CustomEvent) => {
-      const files = event.detail as FileList;
+      const { files } = event.detail as {
+        files: FileList;
+        formDataCreated?: boolean;
+      };
       if (files) {
-        handleFileUploadChange(files);
+        const formData = new FormData();
+        Array.from(files).forEach((file) => {
+          formData.append("file", file);
+          formData.append("folder_path", "/home");
+          //@ts-ignore
+          formData.append("folder_id", null);
+        });
+
+        handleFileUploadChange(formData);
       }
     };
 
@@ -79,23 +92,23 @@ const FileManager: FC = () => {
     };
   }, []);
 
-  const handleFileUploadChange = (uploadedFiles: FileList) => {
-    Array.from(uploadedFiles).forEach((file) => {
-      const fileItem: FileItem = {
-        id: Date.now().toString() + Math.random(),
-        name: file.name,
-        type: "file",
-        size: file.size,
-        modified: new Date(),
-        sharedWith: [],
-        isFavourite: false,
-        isTrashed: false,
-        isSpam: false,
-        ownerId: "current-user",
-        fileType: file.name.split(".").pop()?.toLowerCase(),
-      };
-      addFile(fileItem);
-    });
+  const handleFileUploadChange = (formData: FormData) => {
+    // Upload files to server using FormData
+    uploadFiles(formData)
+      .unwrap()
+      .then((res: any) => {
+        console.log(res, "upload response");
+        if (res?.success) {
+          // Add files to context after successful upload
+
+          refetch();
+        } else {
+          console.error(res?.message || "Upload failed");
+        }
+      })
+      .catch((err: any) => {
+        console.error(err, "upload error");
+      });
   };
 
   const handleFolderUploadChange = (uploadedFiles: FileList) => {
@@ -117,7 +130,7 @@ const FileManager: FC = () => {
     });
   };
 
-  const filteredFiles = driveData?.filter((file:any) => {
+  const filteredFiles = driveData?.filter((file: any) => {
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
@@ -193,17 +206,17 @@ const FileManager: FC = () => {
   const handleView = (file: FileItem) => {
     console.log(file);
 
-    // var width = 1000;
-    // var height = 600;
+    var width = 1000;
+    var height = 600;
 
-    // var left = window.screen.width / 2 - width / 2;
-    // var top = window.screen.height / 2 - height / 2;
+    var left = window.screen.width / 2 - width / 2;
+    var top = window.screen.height / 2 - height / 2;
 
-    // window.open(
-    //   file.type === "file" ? `/viewfile/${file.id}` : "/viewfolder/" + file.id,
-    //   "MsCorpres",
-    //   `width=${width},height=${height},top=${top},left=${left},status=1,scrollbars=1,location=0,resizable=yes`
-    // );
+    window.open(
+      file.type === "file" ? `/viewfile/${file.id}` : "/viewfolder/" + file.id,
+      "MsCorpres",
+      `width=${width},height=${height},top=${top},left=${left},status=1,scrollbars=1,location=0,resizable=yes`
+    );
   };
 
   const handleShare = (file: FileItem) => {
@@ -229,6 +242,7 @@ const FileManager: FC = () => {
     setMenuAnchor(null);
     setSelectedFile(null);
   };
+  
 
   return (
     <Box sx={{ flexGrow: 1, backgroundColor: "#fff" }}>
@@ -268,6 +282,7 @@ const FileManager: FC = () => {
               onMenuClick={handleMenuClick}
               onDownload={handleDownload}
               onView={handleView}
+              onClickFolder={handleClickFolder}
             />
           </Box>
         )}
