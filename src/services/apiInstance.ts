@@ -9,18 +9,20 @@ import {
 const getBaseUrl = (): string => {
   const customDomain = localStorage.getItem("customDomain");
   const customPort = localStorage.getItem("customPort");
-  
+
   if (customDomain) {
-    const protocol = customDomain.includes("localhost") || /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(customDomain)
-      ? "http"
-      : "https";
-    
+    const protocol =
+      customDomain.includes("localhost") ||
+      /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(customDomain)
+        ? "http"
+        : "https";
+
     if (customPort) {
       return `${protocol}://${customDomain}:${customPort}`;
     }
     return `${protocol}://${customDomain}`;
   }
-//@ts-ignore
+  //@ts-ignore
   return import.meta.env.VITE_BASE_URL || "";
 };
 
