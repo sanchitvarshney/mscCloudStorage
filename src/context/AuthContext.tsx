@@ -31,8 +31,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signIn();
   }, [signIn]);
 
-  const signOut = useCallback(() => {
-    window.location.href = "/signin";
+  const signOut = useCallback(() => {  
+    localStorage.removeItem("user");
+      window.location.href = "/signin";
     setUser(null);
   }, []);
 

@@ -6,6 +6,7 @@ import SignInPage from "./pages/SignInPage";
 import HomePage from "./pages/HomePage";
 
 import OfflinePage from "./pages/OfflinePage";
+import Protected from "./components/Protected";
 
 const App: React.FC = () => {
   return (
@@ -13,7 +14,7 @@ const App: React.FC = () => {
       <FileProvider>
         <Routes>
           <Route path="/signin" element={<SignInPage />} />
-          <Route path="/" element={<AppContent />}>
+          <Route path="/" element={<Protected><AppContent /></Protected>}>
             <Route index element={<Navigate to="/home" replace />} />
             <Route path="home" element={<HomePage />} />
             {/* <Route path="home/:folderId" element={<FolderView />} /> */}

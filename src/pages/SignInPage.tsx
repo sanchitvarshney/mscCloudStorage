@@ -1,4 +1,4 @@
-import { Box, CircularProgress } from "@mui/material";
+import { Box, CircularProgress, Typography, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { useLoginGoogleMutation } from "../services/auth";
@@ -6,15 +6,16 @@ import { useAuth } from "../hooks/AuthHook";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { signIn} = useAuth();
- 
-    const [loginGoogle, { isLoading: isLoadingGoogle }] =
+  const { signIn } = useAuth();
+
+  const [loginGoogle, { isLoading: isLoadingGoogle }] =
     useLoginGoogleMutation();
 
   const handleLoginWithGoogle = (googleResponse: any) => {
     const data: any = {
       credential: googleResponse.credential,
     };
+
     loginGoogle(data)
       .unwrap()
       .then((res: any) => {
@@ -23,69 +24,97 @@ const Login = () => {
           signIn();
           navigate("/home");
         } else {
-          // showToast(res?.message, "error");
-          console.log(res,"res")
+          console.log(res);
         }
       })
       .catch((err: any) => {
-          console.log(err,"res")
-        // showToast(
-        //   err?.data?.message ||
-        //     err?.message ||
-        //     "We're Sorry An unexpected error has occured. Our technical staff has been automatically notified and will be looking into this with utmost urgency.",
-        //   "error",
-        // );
+        console.log(err);
       });
   };
+
   return (
     <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      minHeight="calc(100vh - 30px)"
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
+        padding: 2,
+      }}
     >
-      <Box
+      <Paper
+        elevation={10}
         sx={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          maxWidth: "900px",
-          overflow: "hidden",
+          width: "100%",
+          maxWidth: 420,
+          padding: "40px 30px",
           borderRadius: "20px",
-          border: "1px solid #ccc",
-          gap: "20px",
-          padding: "40px",
+          textAlign: "center",
+          position: "relative",
         }}
       >
-        {/* LEFT SECTION */}
+        <Box mb={2}>
+          <img
+            src="/mscorpres_auto_logo.png"
+            alt="Logo"
+            width={140}
+            style={{ marginBottom: 10 }}
+          />
+        </Box>
+        <Typography variant="h5" fontWeight={700}>
+          Welcome Back
+        </Typography>
+
+        <Typography variant="body2" color="text.secondary" mb={4}>
+          Sign in to continue to your drive
+        </Typography>
         <Box
           sx={{
-            width: "100%",
-            height: "100%",
             display: "flex",
+            justifyContent: "center",
+            minHeight: 50,
             alignItems: "center",
           }}
         >
-          <img src="/mscorpres_auto_logo.png" alt="Logo" width={150} />
-        </Box>
-        <Box>
           {isLoadingGoogle ? (
-           
-              <CircularProgress />
-          
+            <Box sx={{}}>
+              <CircularProgress size={32} />
+              <Typography variant="body2" color="text.secondary" mt={2}>
+                Please wait, Loading...
+              </Typography>
+              </Box>
           ) : (
-            <GoogleLogin
-            onSuccess={(credentialResponse) => {
-              handleLoginWithGoogle(credentialResponse);
-            }}
-            onError={() => {
-              // showToast("Login failed", "error");
-            }}
-            shape="circle"
-            text="continue_with"
-          />
+            <Box
+              sx={{
+                transition: "0.3s",
+                "&:hover": {
+                  transform: "scale(1.03)",
+                },
+              }}
+            >
+              <GoogleLogin
+                onSuccess={(credentialResponse) => {
+                  handleLoginWithGoogle(credentialResponse);
+                }}
+                onError={() => {
+                  console.log("Login Failed");
+                }}
+                text="continue_with"
+                shape="pill"
+              />
+            </Box>
           )}
         </Box>
-      </Box>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          display="block"
+          mt={4}
+        >
+          Secure login powered by Google OAuth
+        </Typography>
+      </Paper>
     </Box>
   );
 };
