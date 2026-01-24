@@ -30,6 +30,7 @@ import SendFeedbackDialog from "./SendFeedbackDialog";
 import { useConnectivity } from "../hooks/useConnectivity";
 import Profile from "./Profile";
 import { useAuth } from "../hooks/AuthHook";
+import DomainSettings from "./DomainSettings";
 
 const AppContent: React.FC = () => {
 const { user, signOut } =  useAuth();
@@ -44,6 +45,7 @@ const { user, signOut } =  useAuth();
   const [helpDrawerOpen, setHelpDrawerOpen] = useState(false);
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
   const [profileDrawerOpen, setProfileDrawerOpen] = useState(false);
+  const [domainSettingsDrawerOpen, setDomainSettingsDrawerOpen] = useState(false);
   const { isOnline } = useConnectivity();
 
   useEffect(() => {
@@ -207,8 +209,35 @@ const { user, signOut } =  useAuth();
                 horizontal: "right",
               }}
             >
+              <MenuItem
+                onClick={() => {
+                  handleSettingsClose();
+                  setDomainSettingsDrawerOpen(true);
+                }}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "#e3f2fd",
+                  },
+                  "&.Mui-selected": {
+                    backgroundColor: "#1976d2",
+                    color: "#fff",
+                    "&:hover": {
+                      backgroundColor: "#1565c0",
+                    },
+                  },
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 36,
+                    color: "inherit",
+                  }}
+                >
+                  <Settings />
+                </ListItemIcon>
+                General
+              </MenuItem>
               {[
-                { label: "General", icon: <Settings /> },
                 { label: "Storage", icon: <Storage /> },
                 { label: "Privacy", icon: <PrivacyTip /> },
               ].map((option) => (
@@ -401,6 +430,16 @@ const { user, signOut } =  useAuth();
         width={600}
       >
         <Profile />
+      </RightDrawer>
+
+      {/* Domain Settings Drawer */}
+      <RightDrawer
+        open={domainSettingsDrawerOpen}
+        onClose={() => setDomainSettingsDrawerOpen(false)}
+        title="Domain & Port Settings"
+        width={600}
+      >
+        <DomainSettings />
       </RightDrawer>
     </Box>
   );
