@@ -36,8 +36,8 @@ const FileManager: FC = () => {
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
   const [createFolder, { isLoading: isFolderCreating }] =
     useCreateFolderMutation();
-  const [uploadFiles, { isLoading: isUploading }] = useUploadFilesMutation();
-  const { refetch, isLoading, data } = useFetchFilesQuery("", {
+  const [uploadFiles] = useUploadFilesMutation();
+  const { refetch,data } = useFetchFilesQuery("", {
     refetchOnMountOrArgChange: true,
   });
 
