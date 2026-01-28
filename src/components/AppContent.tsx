@@ -1,14 +1,4 @@
-import {
-  Cloud,
-  HelpOutline,
-  Settings,
-  HelpCenter as HelpCenterIcon,
-  Feedback,
-  Storage,
-  Person,
-  Logout,
-  PrivacyTip,
-} from "@mui/icons-material";
+import { Cloud, Settings, Person, Logout } from "@mui/icons-material";
 import {
   AppBar,
   Avatar,
@@ -33,19 +23,18 @@ import { useAuth } from "../hooks/AuthHook";
 import DomainSettings from "./DomainSettings";
 
 const AppContent: React.FC = () => {
-const { user, signOut } =  useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [profileMenuAnchor, setProfileMenuAnchor] =
     useState<null | HTMLElement>(null);
   const [settingsMenuAnchor, setSettingsMenuAnchor] =
     useState<null | HTMLElement>(null);
-  const [helpMenuAnchor, setHelpMenuAnchor] =
-    useState<null | HTMLElement>(null);
   const [helpDrawerOpen, setHelpDrawerOpen] = useState(false);
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
   const [profileDrawerOpen, setProfileDrawerOpen] = useState(false);
-  const [domainSettingsDrawerOpen, setDomainSettingsDrawerOpen] = useState(false);
+  const [domainSettingsDrawerOpen, setDomainSettingsDrawerOpen] =
+    useState(false);
   const { isOnline } = useConnectivity();
 
   useEffect(() => {
@@ -70,14 +59,6 @@ const { user, signOut } =  useAuth();
     setSettingsMenuAnchor(null);
   };
 
-  const handleHelpClick = (event: React.MouseEvent<HTMLElement>) => {
-    setHelpMenuAnchor(event.currentTarget);
-  };
-
-  const handleHelpClose = () => {
-    setHelpMenuAnchor(null);
-  };
-
   return (
     <Box sx={{ display: "flex", height: "100vh", flexDirection: "column" }}>
       <AppBar
@@ -87,13 +68,13 @@ const { user, signOut } =  useAuth();
           backgroundColor: "#fff",
           color: "#000",
           borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
-          mt:  0,
+          mt: 0,
           transition: "margin-top 0.3s ease",
         }}
       >
         <Toolbar sx={{ gap: 2, justifyContent: "space-between", px: 3 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mr: 3 }}>
-            <Cloud sx={{ color: "#1976d2", fontSize: 28 }} />
+            <Cloud sx={{ color: "#1976d2", fontSize: 30 }} />
             <Typography variant="h6" sx={{ color: "#5f6368", fontWeight: 400 }}>
               Drive
             </Typography>
@@ -102,7 +83,7 @@ const { user, signOut } =  useAuth();
             <SearchBar />
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <IconButton
+            {/* <IconButton
               size="small"
               onClick={handleHelpClick}
               sx={{
@@ -113,8 +94,8 @@ const { user, signOut } =  useAuth();
               }}
             >
               <HelpOutline />
-            </IconButton>
-            <Menu
+            </IconButton> */}
+            {/* <Menu
               anchorEl={helpMenuAnchor}
               open={Boolean(helpMenuAnchor)}
               onClose={handleHelpClose}
@@ -183,7 +164,7 @@ const { user, signOut } =  useAuth();
                 </ListItemIcon>
                 Send Feedback
               </MenuItem>
-            </Menu>
+            </Menu> */}
             <IconButton
               size="small"
               onClick={handleSettingsClick}
@@ -237,7 +218,7 @@ const { user, signOut } =  useAuth();
                 </ListItemIcon>
                 General
               </MenuItem>
-              {[
+              {/* {[
                 { label: "Storage", icon: <Storage /> },
                 { label: "Privacy", icon: <PrivacyTip /> },
               ].map((option) => (
@@ -267,9 +248,9 @@ const { user, signOut } =  useAuth();
                   </ListItemIcon>
                   {option.label}
                 </MenuItem>
-              ))}
+              ))} */}
             </Menu>
-          
+
             <Box
               onClick={handleProfileClick}
               sx={{
@@ -335,31 +316,7 @@ const { user, signOut } =  useAuth();
                 </ListItemIcon>
                 Profile
               </MenuItem>
-              <MenuItem
-                onClick={handleProfileClose}
-                sx={{
-                  "&:hover": {
-                    backgroundColor: "#e3f2fd",
-                  },
-                  "&.Mui-selected": {
-                    backgroundColor: "#1976d2",
-                    color: "#fff",
-                    "&:hover": {
-                      backgroundColor: "#1565c0",
-                    },
-                  },
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 36,
-                    color: "inherit",
-                  }}
-                >
-                  <Settings />
-                </ListItemIcon>
-                Settings
-              </MenuItem>
+
               <MenuItem
                 onClick={() => {
                   handleProfileClose();

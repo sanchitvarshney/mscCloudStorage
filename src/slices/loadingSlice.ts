@@ -5,9 +5,11 @@ interface LoadingState {
   isFavoriting: boolean;
   isRestoring: boolean;
   isFetching: boolean;
+  isViewing: boolean;
   deletingFileId: string | null;
   favoritingFileId: string | null;
   restoringFileId: string | null;
+  viewingFileId: string | null;
 }
 
 const initialState: LoadingState = {
@@ -15,9 +17,11 @@ const initialState: LoadingState = {
   isFavoriting: false,
   isRestoring: false,
   isFetching: false,
+  isViewing: false,
   deletingFileId: null,
   favoritingFileId: null,
   restoringFileId: null,
+  viewingFileId: null,
 };
 
 const loadingSlice = createSlice({
@@ -48,14 +52,23 @@ const loadingSlice = createSlice({
     setFetching: (state, action: PayloadAction<{ loading: boolean }>) => {
       state.isFetching = action.payload.loading;
     },
+    setViewing: (
+      state,
+      action: PayloadAction<{ loading: boolean; fileId?: string | null }>,
+    ) => {
+      state.isViewing = action.payload.loading;
+      state.viewingFileId = action.payload.fileId || null;
+    },
     resetLoading: (state) => {
       state.isDeleting = false;
       state.isFavoriting = false;
       state.isRestoring = false;
       state.isFetching = false;
+      state.isViewing = false;
       state.deletingFileId = null;
       state.favoritingFileId = null;
       state.restoringFileId = null;
+      state.viewingFileId = null;
     },
   },
 });
@@ -65,6 +78,7 @@ export const {
   setFavoriting,
   setRestoring,
   setFetching,
+  setViewing,
   resetLoading,
 } = loadingSlice.actions;
 export default loadingSlice.reducer;

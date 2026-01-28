@@ -19,6 +19,8 @@ interface FileListViewProps {
   files: FileItem[];
   currentView: string;
   onMenuClick: (event: React.MouseEvent, file: FileItem) => void;
+  onDownload?: (file: FileItem) => void;
+  onView?: (file: FileItem) => void;
   onClickFolder?: (file: FileItem) => void;
 }
 
@@ -26,6 +28,8 @@ const FileListView: FC<FileListViewProps> = ({
   files,
   currentView,
   onMenuClick,
+  onDownload,
+  onView,
   onClickFolder,
 }) => {
   if (currentView === "sharedWithMe") {
@@ -76,6 +80,8 @@ const FileListView: FC<FileListViewProps> = ({
                         key={file.id}
                         file={file}
                         onMenuClick={onMenuClick}
+                        onDownload={onDownload}
+                        onView={onView}
                         isSharedWithMe={true}
                         onClickFolder={onClickFolder}
                       />
@@ -113,6 +119,8 @@ const FileListView: FC<FileListViewProps> = ({
               key={file.id}
               file={file}
               onMenuClick={onMenuClick}
+              onDownload={onDownload}
+              onView={onView}
               onClickFolder={onClickFolder}
             />
           ))}

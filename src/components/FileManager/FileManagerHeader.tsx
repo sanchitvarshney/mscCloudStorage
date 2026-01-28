@@ -1,5 +1,6 @@
 import { FC } from "react";
-import { Box, Typography, FormControl, Select, MenuItem } from "@mui/material";
+import { Box, Typography, FormControl, Select, MenuItem, IconButton, CircularProgress } from "@mui/material";
+import { ArrowBack, Refresh } from "@mui/icons-material";
 import { ViewType } from "../../types";
 import { getViewTitle } from "../../utils";
 import ViewToggle from "./ViewToggle";
@@ -9,6 +10,9 @@ interface FileManagerHeaderProps {
   viewMode: "list" | "grid";
   onViewModeChange: (mode: "list" | "grid") => void;
   folder: any;
+  onBack?: () => void;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
 }
 
 const FileManagerHeader: FC<FileManagerHeaderProps> = ({
@@ -16,7 +20,11 @@ const FileManagerHeader: FC<FileManagerHeaderProps> = ({
   viewMode,
   onViewModeChange,
   folder,
+  onBack,
+  onRefresh,
+  isRefreshing = false,
 }) => {
+  const isFolderView = !!folder;
   return (
     <Box
       sx={{
@@ -30,12 +38,27 @@ const FileManagerHeader: FC<FileManagerHeaderProps> = ({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          mb: 0,
         }}
       >
-        <Typography variant="h5" sx={{ fontWeight: 400, color: "#202124" }}>
-          {folder ?? getViewTitle(currentView)}
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {isFolderView && onBack && (
+            <IconButton
+              onClick={onBack}
+              size="small"
+              sx={{
+                color: "#5f6368",
+                "&:hover": {
+                  backgroundColor: "rgba(0, 0, 0, 0.04)",
+                },
+              }}
+            >
+              <ArrowBack />
+            </IconButton>
+          )}
+          <Typography variant="h5" sx={{ fontWeight: 400, color: "#202124" }}>
+            {folder ?? getViewTitle(currentView)}
+          </Typography>
+        </Box>
         {currentView === "sharedWithMe" && (
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
             <FormControl size="small" sx={{ minWidth: 120 }}>
@@ -68,7 +91,27 @@ const FileManagerHeader: FC<FileManagerHeaderProps> = ({
             </FormControl>
           </Box>
         )}
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+          <IconButton 
+            size="small" 
+            sx={{ 
+              color: "#5f6368",
+              "&:hover": {
+                backgroundColor: "rgba(0, 0, 0, 0.04)",
+              },
+            }} 
+            onClick={onRefresh}
+            disabled={isRefreshing}
+          >
+            {isRefreshing ? (
+              <CircularProgress size={20} sx={{ color: "#5f6368" }} />
+            ) : (
+              <Refresh />
+            )}
+          </IconButton>
+       
         <ViewToggle viewMode={viewMode} onViewChange={onViewModeChange} />
+        </Box>
       </Box>
     </Box>
   );

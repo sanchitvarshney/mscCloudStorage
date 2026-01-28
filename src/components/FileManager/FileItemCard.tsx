@@ -12,6 +12,7 @@ import { MoreVert, Download, Visibility } from "@mui/icons-material";
 import { FileItem } from "../../types";
 import FileIcon from "./FileIcon";
 import { formatFileSize } from "../../utils";
+import { useSelector } from "react-redux";
 
 interface FileItemCardProps {
   file: FileItem;
@@ -19,7 +20,6 @@ interface FileItemCardProps {
   onDownload?: (file: FileItem) => void;
   onView?: (file: FileItem) => void;
   onClickFolder?: (file: FileItem) => void;
-  loading: boolean;
 }
 
 const FileItemCard: FC<FileItemCardProps> = ({
@@ -28,9 +28,12 @@ const FileItemCard: FC<FileItemCardProps> = ({
   onDownload,
   onView,
   onClickFolder,
-  loading,
 }) => {
   const [isHover, setIsHover] = useState(false);
+  const { isViewing, viewingFileId } = useSelector(
+    (state: any) => state.loadingState,
+  );
+  const isFileViewing = isViewing && viewingFileId === file?.unique_key;
 
   const handleDownload = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -190,7 +193,7 @@ const FileItemCard: FC<FileItemCardProps> = ({
                       },
                     }}
                   >
-                    {loading ? <CircularProgress size={20} /> : <Visibility />}
+                    {isFileViewing ? <CircularProgress size={20} /> : <Visibility />}
                   </IconButton>
                 )}
               </Box>

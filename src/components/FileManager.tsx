@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState, useMemo } from "react";
 import { Box, CircularProgress } from "@mui/material";
 import { useFileContext } from "../context/FileContext";
 import { FileItem } from "../types";
@@ -9,6 +9,7 @@ import FileContextMenu from "./FileManager/FileContextMenu";
 import CreateFolderDialog from "./FileManager/CreateFolderDialog";
 import ShareDialog from "./FileManager/ShareDialog";
 import EmptyState from "./FileManager/EmptyState";
+import DeleteConfirmationDialog from "./reuseable/DeleteConfirmationDialog";
 import {
   useCreateFolderMutation,
   useFetchFilesQuery,
@@ -25,8 +26,9 @@ import {
   setFavoriting,
   setRestoring,
   setFetching,
+  setViewing,
 } from "../slices/loadingSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 interface FileManagerProps {
   folder?: {};
@@ -42,6 +44,8 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
 
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState<any | null>(null);
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [driveData, setDriveData] = useState<any[]>([]);
@@ -50,21 +54,38 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   const [createFolder, { isLoading: isFolderCreating }] =
     useCreateFolderMutation();
   const [uploadFiles] = useUploadFilesMutation();
+
+  const queryArgs = useMemo(() => {
+    const args: { folderId?: string; isTrash?: number } = {};
+    if (folderId) {
+      args.folderId = folderId;
+    }
+    if (currentView === "trash") {
+      args.isTrash = 1;
+    }
+    return args;
+  }, [folderId, currentView]);
+
   const {
     data,
     refetch,
     isLoading: isFetching,
-  } = useFetchFilesQuery(
-    { folderId, isTrash: currentView === "trash" },
-    {
-      refetchOnMountOrArgChange: true,
-    },
-  );
+  } = useFetchFilesQuery(queryArgs, {
+    refetchOnMountOrArgChange: true,
+  });
+
+  useEffect(() => {
+    setDriveData([]);
+  }, [folderId, currentView]);
   const [onDeleteFile] = useOnDeleteFileMutation();
   const [onRestoreFile] = useOnRestoreFileMutation();
   const [onFaviroteFile] = useOnFaviroteFileMutation();
 
-  const [viewFile, { isLoading: isViewing }] = useViewFileMutation();
+  const [viewFile] = useViewFileMutation();
+
+  const { isDeleting, deletingFileId } = useSelector(
+    (state: any) => state.loadingState,
+  );
 
   useEffect(() => {
     dispatch(setFetching({ loading: isFetching }));
@@ -82,6 +103,8 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       if (res.success) {
         showToast(res.message, "success");
         refetch();
+        setDeleteDialogOpen(false);
+        setFileToDelete(null);
       } else {
         showToast(res.message, "error");
       }
@@ -90,6 +113,18 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       showToast("Failed to delete file", "error");
     } finally {
       dispatch(setDeleting({ loading: false, fileId: null }));
+    }
+  };
+
+  const handleDeleteClick = (file: any) => {
+    setFileToDelete(file);
+    setDeleteDialogOpen(true);
+    handleMenuClose();
+  };
+
+  const handleConfirmDelete = () => {
+    if (fileToDelete) {
+      handleTrashFile(fileToDelete);
     }
   };
 
@@ -147,11 +182,20 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     });
   };
 
+  const handleBack = () => {
+    setDriveData([]);
+    // Clear location state and navigate
+    navigate("/home", { replace: true, state: null });
+  };
+
   useEffect(() => {
-    if (data?.data?.length > 0) {
-      setDriveData(data?.data);
+    if (data?.data) {
+      const files = Array.isArray(data.data) ? data.data : [];
+      setDriveData(files);
+    } else if (data !== undefined && !isFetching) {
+      setDriveData([]);
     }
-  }, [data?.data]);
+  }, [data, isFetching, folderId]);
 
   useEffect(() => {
     const handleCreateFolder = () => {
@@ -240,7 +284,10 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       }
     }
 
-    switch (currentView || folderName || folderId) {
+    if (folderId || folderName) {
+      return !file.trash;
+    }
+    switch (currentView) {
       case "home":
         return !file.trash && !file.isSpam;
       case "sharedDrives":
@@ -269,23 +316,12 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
         if (res?.success) {
           setFolderDialogOpen(false);
         } else {
-          // showToast(res?.message, "error");
-          console.log(res, "res");
+          showToast(res?.message);
         }
       })
       .catch((err: any) => {
-        console.log(err, "res");
-        // showToast(
-        //   err?.data?.message ||
-        //     err?.message ||
-        //     "We're Sorry An unexpected error has occured. Our technical staff has been automatically notified and will be looking into this with utmost urgency.",
-        //   "error",
-        // );
+        showToast(err?.message || "Failed to create folder", "error");
       });
-    // if (name.trim()) {
-    //   addFolder(name.trim());
-
-    // }
   };
 
   const handleDownload = (file: FileItem) => {
@@ -303,11 +339,13 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   const handleView = async (file: any) => {
     const payload = { file_key: file.unique_key };
 
+    dispatch(setViewing({ loading: true, fileId: file.unique_key }));
     try {
       const blob = await viewFile(payload).unwrap();
 
       if (!blob) {
         console.error("No file returned from server");
+        showToast("No file returned from server", "error");
         return;
       }
       const url = URL.createObjectURL(blob);
@@ -315,6 +353,9 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       setTimeout(() => URL.revokeObjectURL(url), 10000);
     } catch (err) {
       console.error("Failed to view file:", err);
+      showToast("Failed to view file", "error");
+    } finally {
+      dispatch(setViewing({ loading: false, fileId: null }));
     }
   };
 
@@ -349,6 +390,9 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         folder={folderName}
+        onBack={handleBack}
+        onRefresh={refetch}
+        isRefreshing={isFetching}
       />
 
       <Box sx={{ p: 3 }}>
@@ -381,6 +425,8 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
                 files={filteredFiles}
                 currentView={currentView}
                 onMenuClick={handleMenuClick}
+                onDownload={handleDownload}
+                onView={handleView}
                 onClickFolder={handleClickFolder}
               />
             )}
@@ -414,7 +460,6 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
                 onDownload={handleDownload}
                 onView={handleView}
                 onClickFolder={handleClickFolder}
-                loading={isViewing}
               />
             )}
           </Box>
@@ -431,7 +476,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
         onShare={handleShare}
         onToggleFavourite={handleFavouriteFile}
         onRestore={handleRestoreFile}
-        onDelete={handleTrashFile}
+        onDelete={handleDeleteClick}
       />
 
       <CreateFolderDialog
@@ -449,6 +494,18 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
         }}
         onShare={handleShareSubmit}
         file={selectedFile}
+      />
+
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setFileToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        itemName={fileToDelete?.name}
+        itemType={fileToDelete?.type || "item"}
+        isLoading={isDeleting && deletingFileId === fileToDelete?.unique_key}
       />
     </Box>
   );

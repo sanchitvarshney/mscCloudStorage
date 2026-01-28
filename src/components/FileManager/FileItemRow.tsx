@@ -1,20 +1,24 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import {
   TableRow,
   TableCell,
   Box,
   Typography,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
-import { MoreVert, ArrowDownward } from "@mui/icons-material";
+import { MoreVert, ArrowDownward, Download, Visibility } from "@mui/icons-material";
 import { FileItem } from "../../types";
 import FileIcon from "./FileIcon";
 import { formatDate } from "../../utils";
 import { formatFileSize } from "../../utils";
+import { useSelector } from "react-redux";
 
 interface FileItemRowProps {
   file: FileItem;
   onMenuClick: (event: React.MouseEvent, file: FileItem) => void;
+  onDownload?: (file: FileItem) => void;
+  onView?: (file: FileItem) => void;
   isSharedWithMe?: boolean;
   onClickFolder?: (file: FileItem) => void;
 }
@@ -22,24 +26,49 @@ interface FileItemRowProps {
 const FileItemRow: FC<FileItemRowProps> = ({
   file,
   onMenuClick,
+  onDownload,
+  onView,
   isSharedWithMe = false,
   onClickFolder,
 }) => {
-  const handleRowClick = () => {
+  const [isHover, setIsHover] = useState(false);
+  const { isViewing, viewingFileId } = useSelector(
+    (state: any) => state.loadingState,
+  );
+  const isFileViewing = isViewing && viewingFileId === file?.unique_key;
+
+  const handleDoubleClick = () => {
     if (file.type === "folder" && onClickFolder) {
       onClickFolder(file);
+    }
+  };
+
+  const handleDownload = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onDownload && file.type === "file") {
+      onDownload(file);
+    }
+  };
+
+  const handleView = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onView) {
+      onView(file);
     }
   };
   if (isSharedWithMe) {
     return (
       <TableRow
         key={file.unique_key}
-        onClick={handleRowClick}
+        onDoubleClick={handleDoubleClick}
+        onMouseEnter={() => setIsHover(true)}
+        onMouseLeave={() => setIsHover(false)}
         sx={{
           "&:hover": {
             backgroundColor: "rgba(0, 0, 0, 0.02)",
           },
           cursor: "pointer",
+          position: "relative",
         }}
       >
         <TableCell>
@@ -102,15 +131,51 @@ const FileItemRow: FC<FileItemRowProps> = ({
           </Box>
         </TableCell>
         <TableCell align="right">
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              onMenuClick(e, file);
-            }}
-          >
-            <MoreVert fontSize="small" />
-          </IconButton>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            {isHover && file.type === "file" && (
+              <>
+                {onDownload && (
+                  <IconButton
+                    size="small"
+                    onClick={handleDownload}
+                    sx={{
+                      p: 0.5,
+                    }}
+                  >
+                    <Download fontSize="small" />
+                  </IconButton>
+                )}
+                {onView && (
+                  <IconButton
+                    size="small"
+                    onClick={handleView}
+                    disabled={isFileViewing}
+                    sx={{
+                      p: 0.5,
+                    }}
+                  >
+                    {isFileViewing ? (
+                      <CircularProgress size={16} />
+                    ) : (
+                      <Visibility fontSize="small" />
+                    )}
+                  </IconButton>
+                )}
+              </>
+            )}
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                onMenuClick(e, file);
+              }}
+              sx={{
+                p: 0.5,
+              }}
+            >
+              <MoreVert fontSize="small" />
+            </IconButton>
+          </Box>
         </TableCell>
       </TableRow>
     );
@@ -119,9 +184,13 @@ const FileItemRow: FC<FileItemRowProps> = ({
   return (
     <TableRow
       key={file.id}
+      onDoubleClick={handleDoubleClick}
+      onMouseEnter={() => setIsHover(true)}
+      onMouseLeave={() => setIsHover(false)}
       sx={{
         "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.02)" },
         cursor: "pointer",
+        position: "relative",
       }}
     >
       <TableCell>
@@ -148,18 +217,50 @@ const FileItemRow: FC<FileItemRowProps> = ({
         </Typography>
       </TableCell>
       <TableCell align="right">
-        <IconButton
-          sx={{
-            p: 0.5,
-          }}
-          size="small"
-          onClick={(e) => {
-            e.stopPropagation();
-            onMenuClick(e, file);
-          }}
-        >
-          <MoreVert fontSize="small" />
-        </IconButton>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          {isHover && file.type === "file" && (
+            <>
+              {onDownload && (
+                <IconButton
+                  size="small"
+                  onClick={handleDownload}
+                  sx={{
+                    p: 0.5,
+                  }}
+                >
+                  <Download fontSize="small" />
+                </IconButton>
+              )}
+              {onView && (
+                <IconButton
+                  size="small"
+                  onClick={handleView}
+                  sx={{
+                    p: 0.5,
+                  }}
+                >
+                  {loading ? (
+                    <CircularProgress size={16} />
+                  ) : (
+                    <Visibility fontSize="small" />
+                  )}
+                </IconButton>
+              )}
+            </>
+          )}
+          <IconButton
+            sx={{
+              p: 0.5,
+            }}
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              onMenuClick(e, file);
+            }}
+          >
+            <MoreVert fontSize="small" />
+          </IconButton>
+        </Box>
       </TableCell>
     </TableRow>
   );

@@ -11,16 +11,23 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
       transformResponse: (response: any) => response,
     }),
     fetchFiles: builder.query({
-      query: ({ folderId, isTrash }) => ({
-        url: "/folder/list",
-        method: "GET",
-        params: folderId
-          ? { parent_key: folderId }
-          : isTrash
-            ? { isTrash: 1 }
-            : { isTrash: 0 },
-      }),
-      transformResponse: (response) => response,
+      query: ({ folderId, isTrash }) => {
+        const params: any = {};
+
+        if (folderId) {
+          params.parent_key = folderId;
+        }
+
+        if (isTrash !== undefined) {
+          params.isTrash = isTrash;
+        }
+
+        return {
+          url: "/folder/list",
+          method: "GET",
+          params,
+        };
+      },
     }),
     uploadFiles: builder.mutation({
       query: (credentials) => ({

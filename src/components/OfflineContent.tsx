@@ -2,14 +2,17 @@ import { FC } from "react";
 import { Box, Typography, Button } from "@mui/material";
 import { CloudOff, Refresh } from "@mui/icons-material";
 import { useConnectivity } from "../hooks/useConnectivity";
+import { useNavigate } from "react-router-dom";
 
 const OfflineContent: FC = () => {
   const { isOnline } = useConnectivity();
+  const navigate = useNavigate();
 
   const handleRetry = () => {
     // Force a check by reloading the page or checking connectivity
     if (navigator.onLine) {
-      window.location.reload();
+     navigate("/");
+
     } else {
       // Show a message that they're still offline
       alert("You're still offline. Please check your network connection.");
