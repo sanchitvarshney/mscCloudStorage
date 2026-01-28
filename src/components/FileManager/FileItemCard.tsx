@@ -5,10 +5,9 @@ import {
   Box,
   Typography,
   IconButton,
-  Chip,
   CircularProgress,
 } from "@mui/material";
-import { MoreVert, Download, Visibility } from "@mui/icons-material";
+import { MoreVert, Download, Visibility, Star } from "@mui/icons-material";
 import { FileItem } from "../../types";
 import FileIcon from "./FileIcon";
 import { formatFileSize } from "../../utils";
@@ -30,10 +29,10 @@ const FileItemCard: FC<FileItemCardProps> = ({
   onClickFolder,
 }) => {
   const [isHover, setIsHover] = useState(false);
-  const { isViewing, viewingFileId } = useSelector(
-    (state: any) => state.loadingState,
-  );
+  const { isViewing, viewingFileId, isRestoring, restoringFileId } =
+    useSelector((state: any) => state.loadingState);
   const isFileViewing = isViewing && viewingFileId === file?.unique_key;
+  const isFileRestoring = isRestoring && restoringFileId === file?.unique_key;
 
   const handleDownload = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -63,6 +62,9 @@ const FileItemCard: FC<FileItemCardProps> = ({
         backgroundColor: "#edf4fb",
         position: "relative",
         overflow: "hidden",
+        opacity: isFileRestoring ? 0.6 : 1,
+        pointerEvents: isFileRestoring ? "none" : "auto",
+        transition: "opacity 0.2s ease",
       }}
     >
       <Box
@@ -77,12 +79,16 @@ const FileItemCard: FC<FileItemCardProps> = ({
           zIndex: 3,
         }}
       >
-        <Box sx={{ p: 0.5 }}>
-          <FileIcon file={file} />
-        </Box>
-        <Typography variant="subtitle2" noWrap sx={{ fontWeight: 500 }}>
+        <FileIcon file={file} />
+
+        <Typography
+          variant="subtitle2"
+          noWrap
+          sx={{ fontWeight: 500, ml: 0.5 }}
+        >
           {file.name}
         </Typography>
+
         <IconButton
           sx={{
             p: 0.5,
@@ -92,6 +98,7 @@ const FileItemCard: FC<FileItemCardProps> = ({
             e.stopPropagation();
             onMenuClick(e, file);
           }}
+          disabled={isFileRestoring}
         >
           <MoreVert fontSize="small" />
         </IconButton>
@@ -123,14 +130,21 @@ const FileItemCard: FC<FileItemCardProps> = ({
             mt: 1,
           }}
         >
-          <Typography variant="subtitle2" color="text.secondary">
+          <Typography
+            variant="subtitle2"
+            sx={{ fontSize: 12 }}
+            color="text.secondary"
+          >
             {file.type === "file" ? formatFileSize(file.size) : "Folder"}
           </Typography>
-          {file.sharedWith && file.sharedWith.length > 0 && (
-            <Chip
-              label={`Shared with ${file.sharedWith.length}`}
-              size="small"
-              sx={{ fontSize: "0.7rem" }}
+          {file.favorite && (
+            <Star
+              sx={{
+                fontSize: 20,
+                color: "#fbbc04",
+                fill: "#fbbc04",
+                flexShrink: 0,
+              }}
             />
           )}
         </Box>
@@ -193,7 +207,11 @@ const FileItemCard: FC<FileItemCardProps> = ({
                       },
                     }}
                   >
-                    {isFileViewing ? <CircularProgress size={20} /> : <Visibility />}
+                    {isFileViewing ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      <Visibility />
+                    )}
                   </IconButton>
                 )}
               </Box>

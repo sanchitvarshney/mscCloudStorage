@@ -18,12 +18,10 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
           params.parent_key = folderId;
         }
 
-        if (isTrash !== undefined) {
-          params.isTrash = isTrash;
-        }
+      
 
         return {
-          url: "/folder/list",
+          url: isTrash ? "/folder/trash" : "/folder/list",
           method: "GET",
           params,
         };

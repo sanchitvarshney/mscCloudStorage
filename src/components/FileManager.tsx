@@ -76,7 +76,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
 
   useEffect(() => {
     setDriveData([]);
-  }, [folderId, currentView]);
+  }, [folderId]);
   const [onDeleteFile] = useOnDeleteFileMutation();
   const [onRestoreFile] = useOnRestoreFileMutation();
   const [onFaviroteFile] = useOnFaviroteFileMutation();
@@ -138,14 +138,18 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     try {
       const res: any = await onRestoreFile(payload).unwrap();
       if (res.success) {
-        showToast(res.message, "success");
+        showToast(res.message || "File restored successfully", "success");
         refetch();
+        handleMenuClose();
       } else {
-        showToast(res.message, "error");
+        showToast(res.message || "Failed to restore file", "error");
+        handleMenuClose();
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to restore file:", err);
-      showToast("Failed to restore file", "error");
+      const errorMessage = err?.data?.message || err?.message || "Failed to restore file";
+      showToast(errorMessage, "error");
+      handleMenuClose(); 
     } finally {
       dispatch(setRestoring({ loading: false, fileId: null }));
     }
@@ -161,21 +165,25 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     try {
       const res: any = await onFaviroteFile(payload).unwrap();
       if (res.success) {
-        showToast(res.message, "success");
+        showToast(res.message || "Favorite status updated successfully", "success");
         handleMenuClose();
         refetch();
       } else {
-        showToast(res.message, "error");
+        showToast(res.message || "Failed to update favorite status", "error");
+        handleMenuClose(); 
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to favorite file:", err);
-      showToast("Failed to update favorite status", "error");
+      const errorMessage = err?.data?.message || err?.message || "Failed to update favorite status";
+      showToast(errorMessage, "error");
+      handleMenuClose(); 
     } finally {
       dispatch(setFavoriting({ loading: false, fileId: null }));
     }
   };
 
   const handleClickFolder = (folder: any) => {
+    localStorage.setItem("folderPath", folder.path);
     setDriveData([]);
     navigate(`/home/${folder.unique_key}`, {
       state: { folderName: folder.name, folderPath: folder.path },
@@ -195,7 +203,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     } else if (data !== undefined && !isFetching) {
       setDriveData([]);
     }
-  }, [data, isFetching, folderId]);
+  }, [data, isFetching, folderId, currentView]);
 
   useEffect(() => {
     const handleCreateFolder = () => {
@@ -207,13 +215,15 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
         files: FileList;
         formDataCreated?: boolean;
       };
+      const localStorePath = localStorage.getItem("folderPath") ;
+      console.log(localStorePath,"value")
       if (files) {
         const formData = new FormData();
         Array.from(files).forEach((file) => {
           formData.append("file", file);
           formData.append(
             "folder_path",
-            folderName ? `/home/${folderName}` : "/home",
+            folderName &&  localStorePath ? `${localStorePath}` : "/home",
           );
           //@ts-ignore
           formData.append("folder_id", folderId || null);
@@ -245,7 +255,6 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     uploadFiles(formData)
       .unwrap()
       .then((res: any) => {
-        console.log(res, "upload response");
         if (res?.success) {
           refetch();
         } else {
@@ -264,7 +273,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
         name: file.name,
         type: "file",
         size: file.size,
-        modified: new Date(),
+        modifiedAt: "",
         sharedWith: [],
         isFavourite: false,
         isTrashed: false,
@@ -297,7 +306,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       case "starred":
         return file.favorite && !file.trash;
       case "trash":
-        return file.trash;
+        return file;
       default:
         return !file.trash;
     }

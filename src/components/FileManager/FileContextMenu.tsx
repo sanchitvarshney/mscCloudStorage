@@ -95,8 +95,8 @@ const FileContextMenu: FC<FileContextMenuProps> = ({
           onClick={() => {
             if (file && !isFileRestoring) {
               onRestore(file);
+             
             }
-            onClose();
           }}
           disabled={isFileRestoring}
         >

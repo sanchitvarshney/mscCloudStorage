@@ -3,7 +3,7 @@ export interface FileItem {
   name: string;
   type: "file" | "folder";
   size?: number;
-  modified: Date;
+  modifiedAt: string;
   sharedWith?: string[];
   sharedBy?: string;
   dateShared?: Date;
@@ -14,6 +14,7 @@ export interface FileItem {
   ownerId?: string;
   fileType?: string;
   unique_key?: string;
+  favorite?: boolean;
 }
 
 export interface StorageInfo {

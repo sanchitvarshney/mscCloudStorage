@@ -7,10 +7,15 @@ import {
   IconButton,
   CircularProgress,
 } from "@mui/material";
-import { MoreVert, ArrowDownward, Download, Visibility } from "@mui/icons-material";
+import {
+  MoreVert,
+  ArrowDownward,
+  Download,
+  Visibility,
+  Star,
+} from "@mui/icons-material";
 import { FileItem } from "../../types";
 import FileIcon from "./FileIcon";
-import { formatDate } from "../../utils";
 import { formatFileSize } from "../../utils";
 import { useSelector } from "react-redux";
 
@@ -32,10 +37,10 @@ const FileItemRow: FC<FileItemRowProps> = ({
   onClickFolder,
 }) => {
   const [isHover, setIsHover] = useState(false);
-  const { isViewing, viewingFileId } = useSelector(
-    (state: any) => state.loadingState,
-  );
+  const { isViewing, viewingFileId, isRestoring, restoringFileId } =
+    useSelector((state: any) => state.loadingState);
   const isFileViewing = isViewing && viewingFileId === file?.unique_key;
+  const isFileRestoring = isRestoring && restoringFileId === file?.unique_key;
 
   const handleDoubleClick = () => {
     if (file.type === "folder" && onClickFolder) {
@@ -69,6 +74,9 @@ const FileItemRow: FC<FileItemRowProps> = ({
           },
           cursor: "pointer",
           position: "relative",
+          opacity: isFileRestoring ? 0.6 : 1,
+          pointerEvents: isFileRestoring ? "none" : "auto",
+          transition: "opacity 0.2s ease",
         }}
       >
         <TableCell>
@@ -80,10 +88,21 @@ const FileItemRow: FC<FileItemRowProps> = ({
             }}
           >
             <FileIcon file={file} />
-            <Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
               <Typography variant="body2" sx={{ fontWeight: 400 }}>
                 {file.name}
               </Typography>
+
+              {file.favorite && (
+                <Star
+                  sx={{
+                    fontSize: 18,
+                    color: "#fbbc04",
+                    fill: "#fbbc04",
+                  }}
+                />
+              )}
+
               {/* {file.sharedWith && file.sharedWith.length > 0 && (
                 <Box
                   sx={{
@@ -112,14 +131,9 @@ const FileItemRow: FC<FileItemRowProps> = ({
           </Box>
         </TableCell>
         <TableCell>
-          <Typography variant="body2" sx={{ color: "#5f6368" }}>
-            {file?.sharedBy || "Unknown"}
-          </Typography>
-        </TableCell>
-        <TableCell>
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <Typography variant="body2" sx={{ color: "#5f6368" }}>
-              {formatDate(file?.dateShared || file?.modified)}
+              {file?.modifiedAt}
             </Typography>
             <ArrowDownward
               sx={{
@@ -169,11 +183,16 @@ const FileItemRow: FC<FileItemRowProps> = ({
                 e.stopPropagation();
                 onMenuClick(e, file);
               }}
+              disabled={isFileRestoring}
               sx={{
                 p: 0.5,
               }}
             >
-              <MoreVert fontSize="small" />
+              {isFileRestoring ? (
+                <CircularProgress size={16} />
+              ) : (
+                <MoreVert fontSize="small" />
+              )}
             </IconButton>
           </Box>
         </TableCell>
@@ -191,6 +210,9 @@ const FileItemRow: FC<FileItemRowProps> = ({
         "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.02)" },
         cursor: "pointer",
         position: "relative",
+        opacity: isFileRestoring ? 0.6 : 1,
+        pointerEvents: isFileRestoring ? "none" : "auto",
+        transition: "opacity 0.2s ease",
       }}
     >
       <TableCell>
@@ -203,12 +225,23 @@ const FileItemRow: FC<FileItemRowProps> = ({
           }}
         >
           <FileIcon file={file} />
-          <Typography variant="body2">{file.name}</Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            {file.favorite && (
+              <Star
+                sx={{
+                  fontSize: 16,
+                  color: "#fbbc04",
+                  fill: "#fbbc04",
+                }}
+              />
+            )}
+            <Typography variant="body2">{file.name}</Typography>
+          </Box>
         </Box>
       </TableCell>
       <TableCell>
         <Typography variant="body2" sx={{ color: "#5f6368", p: 0 }}>
-          {formatDate(file?.modified)}
+          {file?.modifiedAt}
         </Typography>
       </TableCell>
       <TableCell>
@@ -239,7 +272,7 @@ const FileItemRow: FC<FileItemRowProps> = ({
                     p: 0.5,
                   }}
                 >
-                  {loading ? (
+                  {isFileViewing ? (
                     <CircularProgress size={16} />
                   ) : (
                     <Visibility fontSize="small" />
@@ -257,8 +290,13 @@ const FileItemRow: FC<FileItemRowProps> = ({
               e.stopPropagation();
               onMenuClick(e, file);
             }}
+            disabled={isFileRestoring}
           >
-            <MoreVert fontSize="small" />
+            {isFileRestoring ? (
+              <CircularProgress size={16} />
+            ) : (
+              <MoreVert fontSize="small" />
+            )}
           </IconButton>
         </Box>
       </TableCell>
