@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef } from "react";
 import {
   Drawer,
   List,
@@ -12,25 +12,23 @@ import {
   Menu,
   MenuItem,
   Typography,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Home,
-  DriveFolderUpload,
   Business,
   People,
   Star,
-  Report,
   Delete,
   Add,
   CreateNewFolder,
   UploadFile,
   Folder,
-} from '@mui/icons-material';
-import { Cloud } from '@mui/icons-material';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { ViewType } from '../types';
-import { getRouteFromView, getViewFromRoute } from '../utils/routeMapping';
-import StorageInfo from './StorageInfo';
+} from "@mui/icons-material";
+import { Cloud } from "@mui/icons-material";
+import { useNavigate, useLocation } from "react-router-dom";
+import { ViewType } from "../types";
+import { getRouteFromView, getViewFromRoute } from "../utils/routeMapping";
+import StorageInfo from "./StorageInfo";
 
 const drawerWidth = 280;
 
@@ -41,15 +39,14 @@ const Sidebar: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
 
-  const menuItems: { label: string; view: ViewType; icon: React.ReactNode }[] = [
-    { label: 'Home', view: 'home', icon: <Home /> },
-    { label: 'My Drive', view: 'myDrive', icon: <DriveFolderUpload /> },
-    { label: 'Shared Drives', view: 'sharedDrives', icon: <Business /> },
-    { label: 'Shared with me', view: 'sharedWithMe', icon: <People /> },
-    { label: 'Starred', view: 'starred', icon: <Star /> },
-    { label: 'Spam', view: 'spam', icon: <Report /> },
-    { label: 'Trash', view: 'trash', icon: <Delete /> },
-  ];
+  const menuItems: { label: string; view: ViewType; icon: React.ReactNode }[] =
+    [
+      { label: "Home", view: "home", icon: <Home /> },
+      { label: "Shared Drives", view: "sharedDrives", icon: <Business /> },
+      { label: "Shared with me", view: "sharedWithMe", icon: <People /> },
+      { label: "Starred", view: "starred", icon: <Star /> },
+      { label: "Trash", view: "trash", icon: <Delete /> },
+    ];
 
   const handleNewClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setNewMenuAnchor(event.currentTarget);
@@ -62,7 +59,7 @@ const Sidebar: React.FC = () => {
   const handleNewFolder = () => {
     handleNewMenuClose();
     // Trigger folder creation dialog - we'll need to pass this to parent or use context
-    const event = new CustomEvent('createFolder');
+    const event = new CustomEvent("createFolder");
     window.dispatchEvent(event);
   };
 
@@ -82,28 +79,27 @@ const Sidebar: React.FC = () => {
       sx={{
         width: drawerWidth,
         flexShrink: 0,
-        '& .MuiDrawer-paper': {
+        "& .MuiDrawer-paper": {
           width: drawerWidth,
-          borderRight: 'none',
+          borderRight: "none",
           // boxSizing: 'border-box',
           // borderRight: '1px solid rgba(0, 0, 0, 0.12)',
         },
       }}
     >
-      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
         {/* Logo Section */}
         <Box
           sx={{
-            display: 'flex',
-            alignItems: 'center',
+            display: "flex",
+            alignItems: "center",
             gap: 1,
             p: 2,
-            borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
-            
+            borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
           }}
         >
-          <Cloud sx={{ fontSize: 32, color: '#1976d2' }} />
-          <Typography variant="h6" sx={{ fontWeight: 500, color: '#1976d2' }}>
+          <Cloud sx={{ fontSize: 32, color: "#1976d2" }} />
+          <Typography variant="h6" sx={{ fontWeight: 500, color: "#1976d2" }}>
             Drive
           </Typography>
         </Box>
@@ -116,12 +112,12 @@ const Sidebar: React.FC = () => {
             onClick={handleNewClick}
             fullWidth
             sx={{
-              maxWidth: {sm: '100%', md: 150},
-              textTransform: 'none',
+              maxWidth: { sm: "100%", md: 150 },
+              textTransform: "none",
               borderRadius: 2,
               py: 1,
               boxShadow: 2,
-              '&:hover': {
+              "&:hover": {
                 boxShadow: 4,
               },
             }}
@@ -131,34 +127,36 @@ const Sidebar: React.FC = () => {
           <input
             type="file"
             ref={fileInputRef}
-            style={{ display: 'none' }}
+            style={{ display: "none" }}
             multiple
             onChange={(e) => {
               const files = e.target.files;
               if (files && files.length > 0) {
                 const formData = new FormData();
                 Array.from(files).forEach((file) => {
-                  formData.append('files', file);
+                  formData.append("files", file);
                 });
-                
-                const event = new CustomEvent('fileUpload', { 
-                  detail: { files, formDataCreated: true } 
+
+                const event = new CustomEvent("fileUpload", {
+                  detail: { files, formDataCreated: true },
                 });
                 window.dispatchEvent(event);
               }
-              if (fileInputRef.current) fileInputRef.current.value = '';
+              if (fileInputRef.current) fileInputRef.current.value = "";
             }}
           />
           <input
             type="file"
             ref={folderInputRef}
-            style={{ display: 'none' }}
-            {...({ webkitdirectory: '', directory: '' } as any)}
+            style={{ display: "none" }}
+            {...({ webkitdirectory: "", directory: "" } as any)}
             multiple
             onChange={(e) => {
-              const event = new CustomEvent('folderUpload', { detail: e.target.files });
+              const event = new CustomEvent("folderUpload", {
+                detail: e.target.files,
+              });
               window.dispatchEvent(event);
-              if (folderInputRef.current) folderInputRef.current.value = '';
+              if (folderInputRef.current) folderInputRef.current.value = "";
             }}
           />
         </Box>
@@ -169,12 +167,12 @@ const Sidebar: React.FC = () => {
           open={Boolean(newMenuAnchor)}
           onClose={handleNewMenuClose}
           anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'left',
+            vertical: "bottom",
+            horizontal: "left",
           }}
           transformOrigin={{
-            vertical: 'top',
-            horizontal: 'left',
+            vertical: "top",
+            horizontal: "left",
           }}
           PaperProps={{
             sx: {
@@ -185,22 +183,22 @@ const Sidebar: React.FC = () => {
             },
           }}
         >
-          <MenuItem 
+          <MenuItem
             onClick={handleNewFolder}
             sx={{
               py: 1.5,
-              '&:hover': {
-                backgroundColor: 'rgba(0, 0, 0, 0.04)',
+              "&:hover": {
+                backgroundColor: "rgba(0, 0, 0, 0.04)",
               },
             }}
           >
-            <ListItemIcon >
+            <ListItemIcon>
               <CreateNewFolder fontSize="small" />
             </ListItemIcon>
-            <ListItemText 
+            <ListItemText
               primary="New folder"
               primaryTypographyProps={{
-                variant: 'body2',
+                variant: "body2",
                 sx: { fontWeight: 400 },
               }}
             />
@@ -216,86 +214,84 @@ const Sidebar: React.FC = () => {
               Alt+C then F
             </Typography> */}
           </MenuItem>
-          <MenuItem 
+          <MenuItem
             onClick={handleFileUpload}
             sx={{
               py: 1.5,
-              '&:hover': {
-                backgroundColor: 'rgba(0, 0, 0, 0.04)',
+              "&:hover": {
+                backgroundColor: "rgba(0, 0, 0, 0.04)",
               },
             }}
           >
-            <ListItemIcon >
+            <ListItemIcon>
               <UploadFile fontSize="small" />
             </ListItemIcon>
-            <ListItemText 
+            <ListItemText
               primary="File upload"
               primaryTypographyProps={{
-                variant: 'body2',
+                variant: "body2",
                 sx: { fontWeight: 400 },
               }}
             />
-           
           </MenuItem>
-          <MenuItem 
+          <MenuItem
             onClick={handleFolderUpload}
             sx={{
               py: 1.5,
-              '&:hover': {
-                backgroundColor: 'rgba(0, 0, 0, 0.04)',
+              "&:hover": {
+                backgroundColor: "rgba(0, 0, 0, 0.04)",
               },
             }}
           >
-            <ListItemIcon >
+            <ListItemIcon>
               <Folder fontSize="small" />
             </ListItemIcon>
-            <ListItemText 
+            <ListItemText
               primary="Folder upload"
               primaryTypographyProps={{
-                variant: 'body2',
+                variant: "body2",
                 sx: { fontWeight: 400 },
               }}
             />
-           
           </MenuItem>
         </Menu>
 
         <Divider />
 
         {/* Navigation Menu */}
-        <List  sx={{ flex: 1, py: 0.5, px:1.5 }}>
+        <List sx={{ flex: 1, py: 0.5, px: 1.5 }}>
           {menuItems.map((item) => {
             const route = getRouteFromView(item.view);
             // Get current route from location
-            const currentRoute = location.pathname.split('/').filter(Boolean)[0] || 'home';
+            const currentRoute =
+              location.pathname.split("/").filter(Boolean)[0] || "home";
             const routeView = getViewFromRoute(currentRoute);
             const isSelected = routeView === item.view;
-            
+
             return (
-              <ListItem  key={item.view} disablePadding>
+              <ListItem key={item.view} disablePadding>
                 <ListItemButton
                   selected={isSelected}
                   onClick={() => {
-             
                     navigate(`/${route}`);
                   }}
                   sx={{
-                    py:0.5,
-                    px:1.5,
+                    py: 0.5,
+                    px: 1.5,
 
                     borderRadius: 10,
-                    '&.Mui-selected': {
-                      backgroundColor: 'rgba(25, 118, 210, 0.08)',
-                     
-                      '&:hover': {
-                        backgroundColor: 'rgba(25, 118, 210, 0.12)',
+                    "&.Mui-selected": {
+                      backgroundColor: "rgba(25, 118, 210, 0.08)",
+
+                      "&:hover": {
+                        backgroundColor: "rgba(25, 118, 210, 0.12)",
                       },
                     },
                   }}
                 >
                   <ListItemIcon
                     sx={{
-                      color: isSelected ? '#1976d2' : 'inherit',
+                      color: isSelected ? "#1976d2" : "inherit",
                       minWidth: 40,
                     }}
                   >

@@ -10,17 +10,53 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
       }),
       transformResponse: (response: any) => response,
     }),
-     fetchFiles: builder.query({
-      query: () => ({
+    fetchFiles: builder.query({
+      query: ({ folderId, isTrash }) => ({
         url: "/folder/list",
         method: "GET",
-      
+        params: folderId
+          ? { parent_key: folderId }
+          : isTrash
+            ? { isTrash: 1 }
+            : { isTrash: 0 },
+      }),
+      transformResponse: (response) => response,
+    }),
+    uploadFiles: builder.mutation({
+      query: (credentials) => ({
+        url: "/file/upload",
+        method: "POST",
+        body: credentials,
       }),
       transformResponse: (response: any) => response,
     }),
-      uploadFiles: builder.mutation({
+    viewFile: builder.mutation({
+      query: ({ file_key }) => ({
+        url: `/folder/list?file_key=${file_key}`,
+        method: "GET",
+
+        responseHandler: (response: any) => response.blob(),
+      }),
+    }),
+    onDeleteFile: builder.mutation({
       query: (credentials) => ({
-        url: "/file/upload",
+        url: "/folder/trash",
+        method: "POST",
+        body: credentials,
+      }),
+      transformResponse: (response: any) => response,
+    }),
+    onRestoreFile: builder.mutation({
+      query: (credentials) => ({
+        url: "/folder/restore",
+        method: "POST",
+        body: credentials,
+      }),
+      transformResponse: (response: any) => response,
+    }),
+    onFaviroteFile: builder.mutation({
+      query: (credentials) => ({
+        url: "/folder/favorite",
         method: "POST",
         body: credentials,
       }),
@@ -30,4 +66,12 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
   overrideExisting: false,
 });
 
-export const { useCreateFolderMutation, useFetchFilesQuery, useUploadFilesMutation } = extendedAuthApi;
+export const {
+  useCreateFolderMutation,
+  useFetchFilesQuery,
+  useUploadFilesMutation,
+  useViewFileMutation,
+  useOnDeleteFileMutation,
+  useOnRestoreFileMutation,
+  useOnFaviroteFileMutation,
+} = extendedAuthApi;

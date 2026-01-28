@@ -1,5 +1,5 @@
 import { FC, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import FileManager from "../components/FileManager";
 import { useFileContext } from "../context/FileContext";
 import { getViewFromRoute } from "../utils/routeMapping";
@@ -7,15 +7,17 @@ import { getViewFromRoute } from "../utils/routeMapping";
 const HomePage: FC = () => {
   const location = useLocation();
   const { setCurrentView } = useFileContext();
-
+  const { folderId } = useParams<{ folderId: string }>();
+  const { folderName, folderPath } = useLocation()?.state || {};
   useEffect(() => {
-    // Extract the route from the pathname (e.g., "/my-drive" -> "my-drive")
-    const route = location.pathname.split('/').filter(Boolean)[0] || 'home';
+    const route = location.pathname.split("/").filter(Boolean)[0] || "home";
     const view = getViewFromRoute(route);
     setCurrentView(view);
   }, [location.pathname, setCurrentView]);
 
-  return <FileManager />;
+  return (
+    <FileManager folder={{ folderId, folderName: folderName, folderPath }} />
+  );
 };
 
 export default HomePage;

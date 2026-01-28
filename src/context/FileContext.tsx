@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { FileItem, StorageInfo, ViewType } from '../types';
+import React, { createContext, useContext, useState, ReactNode } from "react";
+import { FileItem, StorageInfo, ViewType } from "../types";
 
 interface FileContextType {
   files: FileItem[];
@@ -10,7 +10,6 @@ interface FileContextType {
   setSearchQuery: (query: string) => void;
   addFile: (file: FileItem) => void;
   addFolder: (name: string) => void;
-  deleteFile: (id: string) => void;
   shareFile: (id: string, userIds: string[]) => void;
   toggleFavourite: (id: string) => void;
   restoreFile: (id: string) => void;
@@ -19,59 +18,61 @@ interface FileContextType {
 
 const FileContext = createContext<FileContextType | undefined>(undefined);
 
-export const FileProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const FileProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   // Sample data for "Shared with me" view
   const sampleFiles: FileItem[] = [
     {
-      id: '1',
-      name: 'WorkSheet.xlsx',
-      type: 'file',
+      id: "1",
+      name: "WorkSheet.xlsx",
+      type: "file",
       size: 245760,
       modified: new Date(),
       dateShared: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // Yesterday
-      sharedBy: 'Sanchit Varshney',
-      sharedWith: ['user1@example.com'],
+      sharedBy: "Sanchit Varshney",
+      sharedWith: ["user1@example.com"],
       isFavourite: false,
       isTrashed: false,
       isSpam: false,
-      ownerId: 'sanchit',
-      fileType: 'xlsx',
+      ownerId: "sanchit",
+      fileType: "xlsx",
     },
     {
-      id: '2',
-      name: 'socket_part2.zip',
-      type: 'file',
+      id: "2",
+      name: "socket_part2.zip",
+      type: "file",
       size: 1572864,
       modified: new Date(),
       dateShared: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), // Last month
-      sharedBy: 'vishalgupta.rgec@gmail.com',
-      sharedWith: ['user1@example.com'],
+      sharedBy: "vishalgupta.rgec@gmail.com",
+      sharedWith: ["user1@example.com"],
       isFavourite: false,
       isTrashed: false,
       isSpam: false,
-      ownerId: 'vishal',
-      fileType: 'zip',
+      ownerId: "vishal",
+      fileType: "zip",
     },
     {
-      id: '3',
-      name: 'Himansu_Ranjan_Patra.pdf',
-      type: 'file',
+      id: "3",
+      name: "Himansu_Ranjan_Patra.pdf",
+      type: "file",
       size: 1048576,
       modified: new Date(),
       dateShared: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000), // Older
-      sharedBy: 'Ruchima Verma',
-      sharedWith: ['user1@example.com'],
+      sharedBy: "Ruchima Verma",
+      sharedWith: ["user1@example.com"],
       isFavourite: false,
       isTrashed: false,
       isSpam: false,
-      ownerId: 'ruchima',
-      fileType: 'pdf',
+      ownerId: "ruchima",
+      fileType: "pdf",
     },
   ];
 
   const [files, setFiles] = useState<FileItem[]>(sampleFiles);
-  const [currentView, setCurrentView] = useState<ViewType>('home');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [currentView, setCurrentView] = useState<ViewType>("home");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [storageInfo, setStorageInfo] = useState<StorageInfo>({
     used: 0,
     total: 15,
@@ -88,30 +89,22 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const folder: FileItem = {
       id: Date.now().toString(),
       name,
-      type: 'folder',
+      type: "folder",
       modified: new Date(),
       sharedWith: [],
       isFavourite: false,
       isTrashed: false,
       isSpam: false,
-      ownerId: 'current-user',
+      ownerId: "current-user",
     };
     setFiles((prev) => [...prev, folder]);
-  };
-
-  const deleteFile = (id: string) => {
-    setFiles((prev) =>
-      prev.map((file) =>
-        file.id === id ? { ...file, isTrashed: true } : file
-      )
-    );
   };
 
   const shareFile = (id: string, userIds: string[]) => {
     setFiles((prev) =>
       prev.map((file) =>
-        file.id === id ? { ...file, sharedWith: userIds } : file
-      )
+        file.id === id ? { ...file, sharedWith: userIds } : file,
+      ),
     );
     setStorageInfo((prev) => ({ ...prev, users: userIds.length }));
   };
@@ -119,16 +112,16 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const toggleFavourite = (id: string) => {
     setFiles((prev) =>
       prev.map((file) =>
-        file.id === id ? { ...file, isFavourite: !file.isFavourite } : file
-      )
+        file.id === id ? { ...file, isFavourite: !file.isFavourite } : file,
+      ),
     );
   };
 
   const restoreFile = (id: string) => {
     setFiles((prev) =>
       prev.map((file) =>
-        file.id === id ? { ...file, isTrashed: false } : file
-      )
+        file.id === id ? { ...file, isTrashed: false } : file,
+      ),
     );
   };
 
@@ -147,7 +140,6 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setSearchQuery,
         addFile,
         addFolder,
-        deleteFile,
         shareFile,
         toggleFavourite,
         restoreFile,
@@ -162,7 +154,7 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 export const useFileContext = () => {
   const context = useContext(FileContext);
   if (!context) {
-    throw new Error('useFileContext must be used within FileProvider');
+    throw new Error("useFileContext must be used within FileProvider");
   }
   return context;
 };

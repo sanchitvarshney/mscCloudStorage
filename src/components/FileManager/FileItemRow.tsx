@@ -5,7 +5,6 @@ import {
   Box,
   Typography,
   IconButton,
-  Avatar,
 } from "@mui/material";
 import { MoreVert, ArrowDownward } from "@mui/icons-material";
 import { FileItem } from "../../types";
@@ -17,17 +16,25 @@ interface FileItemRowProps {
   file: FileItem;
   onMenuClick: (event: React.MouseEvent, file: FileItem) => void;
   isSharedWithMe?: boolean;
+  onClickFolder?: (file: FileItem) => void;
 }
 
 const FileItemRow: FC<FileItemRowProps> = ({
   file,
   onMenuClick,
   isSharedWithMe = false,
+  onClickFolder,
 }) => {
+  const handleRowClick = () => {
+    if (file.type === "folder" && onClickFolder) {
+      onClickFolder(file);
+    }
+  };
   if (isSharedWithMe) {
     return (
       <TableRow
-        key={file.id}
+        key={file.unique_key}
+        onClick={handleRowClick}
         sx={{
           "&:hover": {
             backgroundColor: "rgba(0, 0, 0, 0.02)",
@@ -48,7 +55,7 @@ const FileItemRow: FC<FileItemRowProps> = ({
               <Typography variant="body2" sx={{ fontWeight: 400 }}>
                 {file.name}
               </Typography>
-              {file.sharedWith && file.sharedWith.length > 0 && (
+              {/* {file.sharedWith && file.sharedWith.length > 0 && (
                 <Box
                   sx={{
                     display: "flex",
@@ -71,19 +78,19 @@ const FileItemRow: FC<FileItemRowProps> = ({
                     </Avatar>
                   ))}
                 </Box>
-              )}
+              )} */}
             </Box>
           </Box>
         </TableCell>
         <TableCell>
           <Typography variant="body2" sx={{ color: "#5f6368" }}>
-            {file.sharedBy || "Unknown"}
+            {file?.sharedBy || "Unknown"}
           </Typography>
         </TableCell>
         <TableCell>
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <Typography variant="body2" sx={{ color: "#5f6368" }}>
-              {formatDate(file.dateShared || file.modified)}
+              {formatDate(file?.dateShared || file?.modified)}
             </Typography>
             <ArrowDownward
               sx={{
@@ -132,12 +139,12 @@ const FileItemRow: FC<FileItemRowProps> = ({
       </TableCell>
       <TableCell>
         <Typography variant="body2" sx={{ color: "#5f6368", p: 0 }}>
-          {formatDate(file.modified)}
+          {formatDate(file?.modified)}
         </Typography>
       </TableCell>
       <TableCell>
         <Typography variant="body2" sx={{ color: "#5f6368", p: 0 }}>
-          {file.type === "file" ? formatFileSize(file.size) : "-"}
+          {file?.type === "file" ? formatFileSize(file?.size) : "-"}
         </Typography>
       </TableCell>
       <TableCell align="right">

@@ -1,18 +1,19 @@
 export interface FileItem {
   id: string;
   name: string;
-  type: 'file' | 'folder';
+  type: "file" | "folder";
   size?: number;
   modified: Date;
   sharedWith?: string[];
-  sharedBy?: string; // Name of person who shared
-  dateShared?: Date; // Date when file was shared
+  sharedBy?: string;
+  dateShared?: Date;
   isFavourite?: boolean;
   isTrashed?: boolean;
   isSpam?: boolean;
   parentId?: string;
-  ownerId?: string; // For shared files
-  fileType?: string; // File extension/type (pdf, xlsx, zip, etc.)
+  ownerId?: string;
+  fileType?: string;
+  unique_key?: string;
 }
 
 export interface StorageInfo {
@@ -21,4 +22,11 @@ export interface StorageInfo {
   users: number;
 }
 
-export type ViewType = 'home' | 'myDrive' | 'sharedDrives' | 'sharedWithMe' | 'starred' | 'spam' | 'trash';
+export type ViewType =
+  | "home"
+  | "myDrive"
+  | "sharedDrives"
+  | "sharedWithMe"
+  | "starred"
+  | "spam"
+  | "trash";

@@ -19,12 +19,14 @@ interface FileListViewProps {
   files: FileItem[];
   currentView: string;
   onMenuClick: (event: React.MouseEvent, file: FileItem) => void;
+  onClickFolder?: (file: FileItem) => void;
 }
 
 const FileListView: FC<FileListViewProps> = ({
   files,
   currentView,
   onMenuClick,
+  onClickFolder,
 }) => {
   if (currentView === "sharedWithMe") {
     const groupedFiles = groupFilesByDate(files);
@@ -75,6 +77,7 @@ const FileListView: FC<FileListViewProps> = ({
                         file={file}
                         onMenuClick={onMenuClick}
                         isSharedWithMe={true}
+                        onClickFolder={onClickFolder}
                       />
                     ))}
                   </TableBody>
@@ -110,6 +113,7 @@ const FileListView: FC<FileListViewProps> = ({
               key={file.id}
               file={file}
               onMenuClick={onMenuClick}
+              onClickFolder={onClickFolder}
             />
           ))}
         </TableBody>

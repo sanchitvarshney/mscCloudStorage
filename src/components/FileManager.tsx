@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 import { useFileContext } from "../context/FileContext";
 import { FileItem } from "../types";
 import FileManagerHeader from "./FileManager/FileManagerHeader";
@@ -12,44 +12,146 @@ import EmptyState from "./FileManager/EmptyState";
 import {
   useCreateFolderMutation,
   useFetchFilesQuery,
+  useOnDeleteFileMutation,
+  useOnFaviroteFileMutation,
+  useOnRestoreFileMutation,
   useUploadFilesMutation,
+  useViewFileMutation,
 } from "../services/dirManager/dirServices";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "../hooks/useToast";
+import {
+  setDeleting,
+  setFavoriting,
+  setRestoring,
+  setFetching,
+} from "../slices/loadingSlice";
+import { useDispatch } from "react-redux";
 
-const FileManager: FC = () => {
-  const   navigate = useNavigate();
-  const {
-    currentView,
-    searchQuery,
-    addFile,
-    deleteFile,
-    shareFile,
-    toggleFavourite,
-    restoreFile,
-  } = useFileContext();
+interface FileManagerProps {
+  folder?: {};
+}
+
+const FileManager: FC<FileManagerProps> = ({ folder }) => {
+  const { showToast } = useToast();
+  //@ts-ignore
+  const { folderId, folderName, folderPath } = folder ?? {};
+
+  const navigate = useNavigate();
+  const { currentView, searchQuery, addFile, shareFile } = useFileContext();
 
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [driveData, setDriveData] = useState<any[]>([]);
+  const dispatch = useDispatch();
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
   const [createFolder, { isLoading: isFolderCreating }] =
     useCreateFolderMutation();
   const [uploadFiles] = useUploadFilesMutation();
-  const { refetch,data } = useFetchFilesQuery("", {
-    refetchOnMountOrArgChange: true,
-  });
+  const {
+    data,
+    refetch,
+    isLoading: isFetching,
+  } = useFetchFilesQuery(
+    { folderId, isTrash: currentView === "trash" },
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  );
+  const [onDeleteFile] = useOnDeleteFileMutation();
+  const [onRestoreFile] = useOnRestoreFileMutation();
+  const [onFaviroteFile] = useOnFaviroteFileMutation();
 
-const  handleClickFolder = (folder: any) => {
-navigate(`/home/${folder.id}`);
-}
+  const [viewFile, { isLoading: isViewing }] = useViewFileMutation();
 
   useEffect(() => {
-    if (data?.data?.foldersArr.length > 0 || data?.data?.filesArr.length > 0) {
-      setDriveData([...data?.data?.filesArr, ...data?.data?.foldersArr]);
+    dispatch(setFetching({ loading: isFetching }));
+  }, [isFetching, dispatch]);
+
+  const handleTrashFile = async (file: any) => {
+    const payload = {
+      key: file.unique_key,
+      type: file.type,
+    };
+
+    dispatch(setDeleting({ loading: true, fileId: file.unique_key }));
+    try {
+      const res: any = await onDeleteFile(payload).unwrap();
+      if (res.success) {
+        showToast(res.message, "success");
+        refetch();
+      } else {
+        showToast(res.message, "error");
+      }
+    } catch (err) {
+      console.error("Failed to delete file:", err);
+      showToast("Failed to delete file", "error");
+    } finally {
+      dispatch(setDeleting({ loading: false, fileId: null }));
     }
-  }, [data?.data?.files, data?.data?.foldersArr]);
+  };
+
+  const handleRestoreFile = async (file: any) => {
+    const payload = {
+      key: file.unique_key,
+      type: file.type,
+    };
+
+    dispatch(setRestoring({ loading: true, fileId: file.unique_key }));
+    try {
+      const res: any = await onRestoreFile(payload).unwrap();
+      if (res.success) {
+        showToast(res.message, "success");
+        refetch();
+      } else {
+        showToast(res.message, "error");
+      }
+    } catch (err) {
+      console.error("Failed to restore file:", err);
+      showToast("Failed to restore file", "error");
+    } finally {
+      dispatch(setRestoring({ loading: false, fileId: null }));
+    }
+  };
+  const handleFavouriteFile = async (file: any) => {
+    const payload = {
+      key: file.unique_key,
+      type: file.type,
+      isFav: !file.favorite,
+    };
+
+    dispatch(setFavoriting({ loading: true, fileId: file.unique_key }));
+    try {
+      const res: any = await onFaviroteFile(payload).unwrap();
+      if (res.success) {
+        showToast(res.message, "success");
+        handleMenuClose();
+        refetch();
+      } else {
+        showToast(res.message, "error");
+      }
+    } catch (err) {
+      console.error("Failed to favorite file:", err);
+      showToast("Failed to update favorite status", "error");
+    } finally {
+      dispatch(setFavoriting({ loading: false, fileId: null }));
+    }
+  };
+
+  const handleClickFolder = (folder: any) => {
+    setDriveData([]);
+    navigate(`/home/${folder.unique_key}`, {
+      state: { folderName: folder.name, folderPath: folder.path },
+    });
+  };
+
+  useEffect(() => {
+    if (data?.data?.length > 0) {
+      setDriveData(data?.data);
+    }
+  }, [data?.data]);
 
   useEffect(() => {
     const handleCreateFolder = () => {
@@ -65,9 +167,12 @@ navigate(`/home/${folder.id}`);
         const formData = new FormData();
         Array.from(files).forEach((file) => {
           formData.append("file", file);
-          formData.append("folder_path", "/home");
+          formData.append(
+            "folder_path",
+            folderName ? `/home/${folderName}` : "/home",
+          );
           //@ts-ignore
-          formData.append("folder_id", null);
+          formData.append("folder_id", folderId || null);
         });
 
         handleFileUploadChange(formData);
@@ -90,17 +195,14 @@ navigate(`/home/${folder.id}`);
       window.removeEventListener("fileUpload" as any, handleFileUpload);
       window.removeEventListener("folderUpload" as any, handleFolderUpload);
     };
-  }, []);
+  }, [folderId, folderName]);
 
   const handleFileUploadChange = (formData: FormData) => {
-    // Upload files to server using FormData
     uploadFiles(formData)
       .unwrap()
       .then((res: any) => {
         console.log(res, "upload response");
         if (res?.success) {
-          // Add files to context after successful upload
-
           refetch();
         } else {
           console.error(res?.message || "Upload failed");
@@ -131,7 +233,6 @@ navigate(`/home/${folder.id}`);
   };
 
   const filteredFiles = driveData?.filter((file: any) => {
-    // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       if (!file.name.toLowerCase().includes(query)) {
@@ -139,33 +240,29 @@ navigate(`/home/${folder.id}`);
       }
     }
 
-    // Apply view filter
-    switch (currentView) {
+    switch (currentView || folderName || folderId) {
       case "home":
-        return !file.isTrashed && !file.isSpam;
-      case "myDrive":
-        return (
-          !file.isTrashed && !file.isSpam && file.ownerId === "current-user"
-        );
+        return !file.trash && !file.isSpam;
       case "sharedDrives":
-        return !file.isTrashed && file.sharedWith && file.sharedWith.length > 0;
+        return !file.trash && file.sharedWith && file.sharedWith.length > 0;
       case "sharedWithMe":
-        return (
-          !file.isTrashed && file.ownerId && file.ownerId !== "current-user"
-        );
+        return !file.trash && file.ownerId && file.ownerId !== "current-user";
       case "starred":
-        return file.isFavourite && !file.isTrashed && !file.isSpam;
-      case "spam":
-        return file.isSpam;
+        return file.favorite && !file.trash;
       case "trash":
-        return file.isTrashed;
+        return file.trash;
       default:
-        return !file.isTrashed;
+        return !file.trash;
     }
   });
 
   const handleCreateFolder = (name: string) => {
-    createFolder({ name })
+    const payload = {
+      name: name.trim(),
+      parent_id: folderId ?? null,
+      parent_path: folderPath ?? null,
+    };
+    createFolder(payload)
       .unwrap()
       .then((res: any) => {
         console.log(res, "response");
@@ -203,20 +300,22 @@ navigate(`/home/${folder.id}`);
     URL.revokeObjectURL(url);
   };
 
-  const handleView = (file: FileItem) => {
-    console.log(file);
+  const handleView = async (file: any) => {
+    const payload = { file_key: file.unique_key };
 
-    var width = 1000;
-    var height = 600;
+    try {
+      const blob = await viewFile(payload).unwrap();
 
-    var left = window.screen.width / 2 - width / 2;
-    var top = window.screen.height / 2 - height / 2;
-
-    window.open(
-      file.type === "file" ? `/viewfile/${file.id}` : "/viewfolder/" + file.id,
-      "MsCorpres",
-      `width=${width},height=${height},top=${top},left=${left},status=1,scrollbars=1,location=0,resizable=yes`
-    );
+      if (!blob) {
+        console.error("No file returned from server");
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      window.open(url);
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } catch (err) {
+      console.error("Failed to view file:", err);
+    }
   };
 
   const handleShare = (file: FileItem) => {
@@ -233,7 +332,7 @@ navigate(`/home/${folder.id}`);
     }
   };
 
-  const handleMenuClick = (event: any, file: FileItem) => {
+  const handleMenuClick = (event: any, file: any) => {
     setMenuAnchor(event.currentTarget);
     setSelectedFile(file);
   };
@@ -242,7 +341,6 @@ navigate(`/home/${folder.id}`);
     setMenuAnchor(null);
     setSelectedFile(null);
   };
-  
 
   return (
     <Box sx={{ flexGrow: 1, backgroundColor: "#fff" }}>
@@ -250,10 +348,11 @@ navigate(`/home/${folder.id}`);
         currentView={currentView}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
+        folder={folderName}
       />
 
       <Box sx={{ p: 3 }}>
-        {filteredFiles.length === 0 ? (
+        {filteredFiles.length === 0 && !isFetching ? (
           <EmptyState currentView={currentView} />
         ) : viewMode === "list" ? (
           <Box
@@ -261,13 +360,30 @@ navigate(`/home/${folder.id}`);
               maxHeight: "calc(100vh - 170px)",
               minHeight: "calc(100vh - 170px)",
               overflow: "auto",
+              display: "flex",
+              flexDirection: "column",
             }}
           >
-            <FileListView
-              files={filteredFiles}
-              currentView={currentView}
-              onMenuClick={handleMenuClick}
-            />
+            {isFetching ? (
+              <Box
+                sx={{
+                  width: "100%",
+                  flex: 1,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <CircularProgress />
+              </Box>
+            ) : (
+              <FileListView
+                files={filteredFiles}
+                currentView={currentView}
+                onMenuClick={handleMenuClick}
+                onClickFolder={handleClickFolder}
+              />
+            )}
           </Box>
         ) : (
           <Box
@@ -275,15 +391,32 @@ navigate(`/home/${folder.id}`);
               maxHeight: "calc(100vh - 170px)",
               minHeight: "calc(100vh - 170px)",
               overflow: "auto",
+              display: "flex",
+              flexDirection: "column",
             }}
           >
-            <FileGridView
-              files={filteredFiles}
-              onMenuClick={handleMenuClick}
-              onDownload={handleDownload}
-              onView={handleView}
-              onClickFolder={handleClickFolder}
-            />
+            {isFetching ? (
+              <Box
+                sx={{
+                  width: "100%",
+                  flex: 1,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <CircularProgress />
+              </Box>
+            ) : (
+              <FileGridView
+                files={filteredFiles}
+                onMenuClick={handleMenuClick}
+                onDownload={handleDownload}
+                onView={handleView}
+                onClickFolder={handleClickFolder}
+                loading={isViewing}
+              />
+            )}
           </Box>
         )}
       </Box>
@@ -296,9 +429,9 @@ navigate(`/home/${folder.id}`);
         currentView={currentView}
         onDownload={handleDownload}
         onShare={handleShare}
-        onToggleFavourite={toggleFavourite}
-        onDelete={deleteFile}
-        onRestore={restoreFile}
+        onToggleFavourite={handleFavouriteFile}
+        onRestore={handleRestoreFile}
+        onDelete={handleTrashFile}
       />
 
       <CreateFolderDialog

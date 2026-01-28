@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Menu, MenuItem } from "@mui/material";
+import { CircularProgress, Menu, MenuItem } from "@mui/material";
 import {
   Download,
   Share,
@@ -9,18 +9,19 @@ import {
   RestoreFromTrash,
 } from "@mui/icons-material";
 import { FileItem } from "../../types";
+import { useSelector } from "react-redux";
 
 interface FileContextMenuProps {
   anchorEl: HTMLElement | null;
   open: boolean;
   onClose: () => void;
-  file: FileItem | null;
+  file: any | null;
   currentView: string;
   onDownload: (file: FileItem) => void;
   onShare: (file: FileItem) => void;
   onToggleFavourite: (fileId: string) => void;
-  onDelete: (fileId: string) => void;
-  onRestore: (fileId: string) => void;
+  onDelete: (file: any) => void;
+  onRestore: (file: string) => void;
 }
 
 const FileContextMenu: FC<FileContextMenuProps> = ({
@@ -32,9 +33,23 @@ const FileContextMenu: FC<FileContextMenuProps> = ({
   onDownload,
   onShare,
   onToggleFavourite,
-  onDelete,
   onRestore,
+  onDelete,
 }) => {
+  const {
+    isDeleting,
+    isFavoriting,
+    isRestoring,
+    deletingFileId,
+    favoritingFileId,
+    restoringFileId,
+  } = useSelector((state: any) => state.loadingState);
+
+  const isFileDeleting = isDeleting && deletingFileId === file?.unique_key;
+  const isFileFavoriting =
+    isFavoriting && favoritingFileId === file?.unique_key;
+  const isFileRestoring = isRestoring && restoringFileId === file?.unique_key;
+
   return (
     <Menu anchorEl={anchorEl} open={open} onClose={onClose}>
       {file && file.type === "file" && (
@@ -49,20 +64,28 @@ const FileContextMenu: FC<FileContextMenuProps> = ({
       </MenuItem>
       <MenuItem
         onClick={() => {
-          if (file) {
-            onToggleFavourite(file.id);
+          if (file && !isFileFavoriting) {
+            onToggleFavourite(file);
           }
-          onClose();
         }}
+        disabled={isFileFavoriting}
       >
-        {file?.isFavourite ? (
+        {file?.favorite ? (
           <>
-            <Star sx={{ mr: 1 }} fontSize="small" />
+            {isFileFavoriting ? (
+              <CircularProgress size={15} sx={{ mr: 1 }} />
+            ) : (
+              <Star sx={{ mr: 1 }} fontSize="small" />
+            )}
             Remove from Favourites
           </>
         ) : (
           <>
-            <StarBorder sx={{ mr: 1 }} fontSize="small" />
+            {isFileFavoriting ? (
+              <CircularProgress size={15} sx={{ mr: 1 }} />
+            ) : (
+              <StarBorder sx={{ mr: 1 }} fontSize="small" />
+            )}
             Add to Favourites
           </>
         )}
@@ -70,26 +93,35 @@ const FileContextMenu: FC<FileContextMenuProps> = ({
       {currentView === "trash" ? (
         <MenuItem
           onClick={() => {
-            if (file) {
-              onRestore(file.id);
+            if (file && !isFileRestoring) {
+              onRestore(file);
             }
             onClose();
           }}
+          disabled={isFileRestoring}
         >
-          <RestoreFromTrash sx={{ mr: 1 }} fontSize="small" />
+          {isFileRestoring ? (
+            <CircularProgress size={15} sx={{ mr: 1 }} />
+          ) : (
+            <RestoreFromTrash sx={{ mr: 1 }} fontSize="small" />
+          )}
           Restore
         </MenuItem>
       ) : (
         <MenuItem
           onClick={() => {
-            if (file) {
-              onDelete(file.id);
+            if (file && !isFileDeleting) {
+              onDelete(file);
             }
             onClose();
           }}
-         
+          disabled={isFileDeleting}
         >
-          <Delete sx={{ mr: 1 }} fontSize="small" />
+          {isFileDeleting ? (
+            <CircularProgress size={15} sx={{ mr: 1 }} />
+          ) : (
+            <Delete sx={{ mr: 1 }} fontSize="small" />
+          )}
           Trash
         </MenuItem>
       )}

@@ -8,12 +8,14 @@ interface FileManagerHeaderProps {
   currentView: ViewType;
   viewMode: "list" | "grid";
   onViewModeChange: (mode: "list" | "grid") => void;
+  folder: any;
 }
 
 const FileManagerHeader: FC<FileManagerHeaderProps> = ({
   currentView,
   viewMode,
   onViewModeChange,
+  folder,
 }) => {
   return (
     <Box
@@ -32,7 +34,7 @@ const FileManagerHeader: FC<FileManagerHeaderProps> = ({
         }}
       >
         <Typography variant="h5" sx={{ fontWeight: 400, color: "#202124" }}>
-          {getViewTitle(currentView)}
+          {folder ?? getViewTitle(currentView)}
         </Typography>
         {currentView === "sharedWithMe" && (
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>

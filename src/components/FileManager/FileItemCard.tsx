@@ -6,6 +6,7 @@ import {
   Typography,
   IconButton,
   Chip,
+  CircularProgress,
 } from "@mui/material";
 import { MoreVert, Download, Visibility } from "@mui/icons-material";
 import { FileItem } from "../../types";
@@ -18,6 +19,7 @@ interface FileItemCardProps {
   onDownload?: (file: FileItem) => void;
   onView?: (file: FileItem) => void;
   onClickFolder?: (file: FileItem) => void;
+  loading: boolean;
 }
 
 const FileItemCard: FC<FileItemCardProps> = ({
@@ -25,6 +27,8 @@ const FileItemCard: FC<FileItemCardProps> = ({
   onMenuClick,
   onDownload,
   onView,
+  onClickFolder,
+  loading,
 }) => {
   const [isHover, setIsHover] = useState(false);
 
@@ -43,11 +47,11 @@ const FileItemCard: FC<FileItemCardProps> = ({
   };
   return (
     <Card
-    onClick={() => {
-      if (file.type === "folder") {
-        // onClickFolder(file);
-      }
-    }}
+      onDoubleClick={() => {
+        if (file.type === "folder" && onClickFolder) {
+          onClickFolder(file);
+        }
+      }}
       sx={{
         boxShadow: "none",
         height: "100%",
@@ -128,79 +132,71 @@ const FileItemCard: FC<FileItemCardProps> = ({
           )}
         </Box>
 
-       {
-        file.type === "file"  && (
-           <Box
-          sx={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: isHover ? "rgba(0, 0, 0, 0.1)" : "transparent",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            pointerEvents: isHover ? "auto" : "none",
-            transition: "background-color 0.3s ease",
-            zIndex: 2,
-          }}
-        >
-          {isHover && (
-            <Box
-              sx={{
-                display: "flex",
-                gap: 1.5,
-                alignItems: "center",
-              }}
-            >
-              {file.type === "file" && onDownload && (
-               
-                <IconButton
-                  onClick={handleDownload}
-                                   sx={{
-                    backgroundColor: "#fff",
-                    color: "#202124",
-                    textTransform: "none",
-                    fontWeight: 500,
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-                    "&:hover": {
-                      backgroundColor: "#f8f9fa",
-                      boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
-                    },
-                  }}
-
-                >
-
-                  <Download />
-                </IconButton>
-                 
-              )}
-              {onView && (
-                <IconButton
-                  onClick={handleView}
-                  sx={{
-                    backgroundColor: "#fff",
-                    color: "#202124",
-                    textTransform: "none",
-                    fontWeight: 500,
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-                    "&:hover": {
-                      backgroundColor: "#f8f9fa",
-                      boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
-                    },
-                  }}
-                >
-                  <Visibility />
-                </IconButton>
-                
-             
-              )}
-            </Box>
-          )}
-        </Box>
-        )
-       }
+        {file.type === "file" && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: isHover ? "rgba(0, 0, 0, 0.1)" : "transparent",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              pointerEvents: isHover ? "auto" : "none",
+              transition: "background-color 0.3s ease",
+              zIndex: 2,
+            }}
+          >
+            {isHover && (
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 1.5,
+                  alignItems: "center",
+                }}
+              >
+                {file.type === "file" && onDownload && (
+                  <IconButton
+                    onClick={handleDownload}
+                    sx={{
+                      backgroundColor: "#fff",
+                      color: "#202124",
+                      textTransform: "none",
+                      fontWeight: 500,
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                      "&:hover": {
+                        backgroundColor: "#f8f9fa",
+                        boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
+                      },
+                    }}
+                  >
+                    <Download />
+                  </IconButton>
+                )}
+                {onView && (
+                  <IconButton
+                    onClick={handleView}
+                    sx={{
+                      backgroundColor: "#fff",
+                      color: "#202124",
+                      textTransform: "none",
+                      fontWeight: 500,
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                      "&:hover": {
+                        backgroundColor: "#f8f9fa",
+                        boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
+                      },
+                    }}
+                  >
+                    {loading ? <CircularProgress size={20} /> : <Visibility />}
+                  </IconButton>
+                )}
+              </Box>
+            )}
+          </Box>
+        )}
       </CardContent>
     </Card>
   );
