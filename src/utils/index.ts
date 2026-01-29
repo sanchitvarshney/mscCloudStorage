@@ -74,9 +74,7 @@ export const groupFilesByDate = (files: any[]) => {
   return groups;
 };
 
-
-
-export const keyPair = await window.crypto.subtle.generateKey(
+export const keyPairPromise = window.crypto.subtle.generateKey(
   {
     name: "RSA-OAEP",
     modulusLength: 2048,
@@ -106,6 +104,7 @@ function bytesToBase64(bytes: ArrayBuffer | Uint8Array): string {
 
 
 export const decryptedData = async (payload: any) => {
+  const keyPair = await keyPairPromise;
 
   // RSA decrypt AES key
   const encryptedKeyBytes = base64ToBytes(payload.encryptedKey);
@@ -157,6 +156,8 @@ export const encryptedData = async (payload: unknown): Promise<{
   data: string;
   tag: string;
 }> => {
+  const keyPair = await keyPairPromise;
+
   // Generate random AES key for AES-GCM
   const aesKey = await crypto.subtle.generateKey(
     { name: "AES-GCM", length: 256 },

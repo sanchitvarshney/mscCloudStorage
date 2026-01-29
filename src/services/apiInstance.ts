@@ -5,7 +5,7 @@ import {
   fetchBaseQuery,
   type BaseQueryFn,
 } from "@reduxjs/toolkit/query/react";
-import { keyPair } from "../utils";
+import { keyPairPromise } from "../utils";
 
 const getBaseUrl = (): string => {
   const customDomain = localStorage.getItem("customDomain");
@@ -34,11 +34,14 @@ const baseQueryWithReauth: BaseQueryFn = async (args, api, extraOptions) => {
   const baseQuery = fetchBaseQuery({
     baseUrl,
     prepareHeaders: async (headers) => {
-    
-const publicKey = await crypto.subtle.exportKey("spki", keyPair.publicKey);
-const publicKeyBase64 = btoa(
-  String.fromCharCode(...new Uint8Array(publicKey))
-);
+      const keyPair = await keyPairPromise;
+      const publicKey = await crypto.subtle.exportKey(
+        "spki",
+        keyPair.publicKey,
+      );
+      const publicKeyBase64 = btoa(
+        String.fromCharCode(...new Uint8Array(publicKey)),
+      );
       const user = localStorage.getItem("user");
       const token = user ? JSON.parse(user).token : null;
       if (token) {

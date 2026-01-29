@@ -84,10 +84,13 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   const {
     data,
     refetch,
-    isLoading: isFetching,
+    isLoading,
+    isFetching,
   } = useFetchFilesQuery(queryArgs, {
     refetchOnMountOrArgChange: true,
   });
+
+  const isFetchingFiles = isLoading || isFetching;
 
   useEffect(() => {
     setDriveData([]);
@@ -103,8 +106,8 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   );
 
   useEffect(() => {
-    dispatch(setFetching({ loading: isFetching }));
-  }, [isFetching, dispatch]);
+    dispatch(setFetching({ loading: isFetchingFiles }));
+  }, [isFetchingFiles, dispatch]);
 
   const handleTrashFile = async (file: any) => {
     const payload = {
@@ -220,8 +223,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   };
 
   useEffect(() => {
-    if (isFetching) {
-       setDriveData([]);
+    if (isFetchingFiles) {
       return; 
     }
     if (data?.data) {
@@ -230,7 +232,8 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     } else if (data !== undefined) {
       setDriveData([]);
     }
-  }, [data, isFetching, folderId, currentView]);
+  }, [data, isFetchingFiles, folderId]);
+
 
   useEffect(() => {
     const handleCreateFolder = () => {
@@ -426,6 +429,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     setSelectedFile(null);
   };
 
+
   return (
     <Box sx={{ flexGrow: 1, backgroundColor: "#fff" }}>
       <FileManagerHeader
@@ -435,11 +439,11 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
         folder={folderName}
         onBack={handleBack}
         onRefresh={refetch}
-        isRefreshing={isFetching}
+        isRefreshing={isFetchingFiles}
       />
 
       <Box sx={{ p: 3 }}>
-        {filteredFiles.length === 0 && !isFetching ? (
+        {filteredFiles.length === 0 && !isFetchingFiles ? (
           <EmptyState currentView={currentView} />
         ) : viewMode === "list" ? (
           <Box
@@ -451,7 +455,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
               flexDirection: "column",
             }}
           >
-            {isFetching ? (
+            {isFetchingFiles ? (
               <Box
                 sx={{
                   width: "100%",
@@ -484,7 +488,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
               flexDirection: "column",
             }}
           >
-            {isFetching ? (
+            {isFetchingFiles ? (
               <Box
                 sx={{
                   width: "100%",
