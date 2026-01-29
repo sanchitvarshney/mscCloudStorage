@@ -22,7 +22,6 @@ import {
   Add,
   CreateNewFolder,
   UploadFile,
-  Folder,
 } from "@mui/icons-material";
 import { Cloud } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -68,10 +67,6 @@ const Sidebar: React.FC = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFolderUpload = () => {
-    handleNewMenuClose();
-    folderInputRef.current?.click();
-  };
 
   return (
     <Drawer
@@ -234,26 +229,7 @@ const Sidebar: React.FC = () => {
               }}
             />
           </MenuItem>
-          <MenuItem
-            onClick={handleFolderUpload}
-            sx={{
-              py: 1.5,
-              "&:hover": {
-                backgroundColor: "rgba(0, 0, 0, 0.04)",
-              },
-            }}
-          >
-            <ListItemIcon>
-              <Folder fontSize="small" />
-            </ListItemIcon>
-            <ListItemText
-              primary="Folder upload"
-              primaryTypographyProps={{
-                variant: "body2",
-                sx: { fontWeight: 400 },
-              }}
-            />
-          </MenuItem>
+        
         </Menu>
 
         <Divider />

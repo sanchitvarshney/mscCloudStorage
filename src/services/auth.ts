@@ -20,11 +20,22 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
         return decryptedData(response);
       },
     }),
-     getProfile: builder.query({
+    getProfile: builder.query({
       query: ({}) => ({
-        url: `/login/user/manage-profile`,
+        url: `/user/manage-profile`,
         method: "GET",
       }),
+      transformResponse: async (response: any) => {
+        if (
+          !response ||
+          typeof response !== "object" ||
+          !response.encryptedKey
+        ) {
+          return response;
+        }
+
+        return decryptedData(response);
+      },
     }),
   }),
   overrideExisting: false,

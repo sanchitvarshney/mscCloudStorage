@@ -85,7 +85,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     }
   }, []);
 
-  const { data, refetch, isLoading } = useFetchFilesQuery(queryArgs, {
+  const { data, refetch, isLoading, isFetching } = useFetchFilesQuery(queryArgs, {
     refetchOnMountOrArgChange: true,
   });
 
@@ -434,7 +434,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
         folder={folderName}
         onBack={handleBack}
         onRefresh={refetch}
-        isRefreshing={isFetchingFiles}
+        isRefreshing={isFetchingFiles || isFetching}
       />
 
       <Box sx={{ p: 3 }}>

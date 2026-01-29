@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -25,9 +25,26 @@ import {
   CheckCircle,
 } from "@mui/icons-material";
 
-const Profile: FC = ({userData}:any) => {
+const DEFAULT_STORAGE_BYTES = 5 * 1024 * 1024 * 1024; // 5 GB
+
+function formatBytes(bytes: number | string | undefined): string {
+  const n = Number(bytes);
+  if (!Number.isFinite(n) || n < 0) return "0 B";
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(2)} KB`;
+  if (n < 1024 * 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(2)} MB`;
+  return `${(n / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+}
+
+const Profile: FC = ({ userData }: any) => {
+  const rawData = userData?.userData ?? userData ?? {};
   const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] = useState(userData ?? {});
+  const [profileData, setProfileData] = useState(rawData);
+
+  useEffect(() => {
+    const data = userData?.userData ?? userData ?? {};
+    setProfileData(data);
+  }, [userData]);
 
   const handleEdit = () => {
     setIsEditing(!isEditing);
@@ -39,10 +56,20 @@ const Profile: FC = ({userData}:any) => {
   };
 
   const handleChange = (field: string, value: string) => {
-    setProfileData((prev:any) => ({ ...prev, [field]: value }));
+    setProfileData((prev: any) => ({ ...prev, [field]: value }));
   };
 
-  const storagePercentage = (profileData.storageUsed / profileData.storageTotal) * 100;
+  const spaceOccupiedBytes = Number(profileData.spaceOccupied) || 0;
+  const storageTotalBytes =
+    Number(profileData.storageTotal) || DEFAULT_STORAGE_BYTES;
+  const storagePercentage =
+    storageTotalBytes > 0
+      ? Math.min(100, (spaceOccupiedBytes / storageTotalBytes) * 100)
+      : 0;
+  const displayPhone =
+    profileData.phone && profileData.phone !== "--"
+      ? profileData.phone
+      : "Not provided";
 
 
   return (
@@ -129,7 +156,7 @@ const Profile: FC = ({userData}:any) => {
             Storage
           </Typography>
           <Typography variant="body2" sx={{ color: "#5f6368" }}>
-            {profileData.storageUsed} GB of {profileData.storageTotal} GB used
+            {formatBytes(spaceOccupiedBytes)} of {formatBytes(storageTotalBytes)} used
           </Typography>
         </Box>
         <Box
@@ -202,15 +229,16 @@ const Profile: FC = ({userData}:any) => {
                 primary="Phone"
                 secondary={isEditing ? (
                   <TextField
-                    value={profileData.phone}
+                    value={profileData.phone === "--" ? "" : profileData.phone}
                     onChange={(e) => handleChange("phone", e.target.value)}
                     variant="outlined"
                     size="small"
                     fullWidth
                     type="tel"
+                    placeholder="Not provided"
                   />
                 ) : (
-                  profileData.phone
+                  displayPhone
                 )}
                 secondaryTypographyProps={{
                   sx: { color: "#202124", mt: 0.5 },
