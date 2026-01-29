@@ -64,13 +64,17 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   }, [isUploading]);
 
   const queryArgs = useMemo(() => {
-    const args: { folderId?: string; isTrash?: number } = {};
+    const args: { folderId?: string; isTrash?: number; currentView: string } = {
+      currentView,
+    };
+
     if (folderId) {
       args.folderId = folderId;
     }
     if (currentView === "trash") {
       args.isTrash = 1;
     }
+
     return args;
   }, [folderId, currentView]);
 
@@ -81,14 +85,12 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     }
   }, []);
 
-  const {
-    data,
-    refetch,
-    isLoading,
-    isFetching,
-  } = useFetchFilesQuery(queryArgs, {
-    refetchOnMountOrArgChange: true,
-  });
+  const { data, refetch, isLoading, isFetching } = useFetchFilesQuery(
+    queryArgs,
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  );
 
   const isFetchingFiles = isLoading || isFetching;
 
@@ -224,7 +226,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
 
   useEffect(() => {
     if (isFetchingFiles) {
-      return; 
+      return;
     }
     if (data?.data) {
       const files = Array.isArray(data.data) ? data.data : [];
@@ -233,7 +235,6 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       setDriveData([]);
     }
   }, [data, isFetchingFiles, folderId]);
-
 
   useEffect(() => {
     const handleCreateFolder = () => {
@@ -428,7 +429,6 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     setMenuAnchor(null);
     setSelectedFile(null);
   };
-
 
   return (
     <Box sx={{ flexGrow: 1, backgroundColor: "#fff" }}>

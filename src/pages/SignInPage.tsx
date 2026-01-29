@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { useLoginGoogleMutation } from "../services/auth";
 import { useAuth } from "../hooks/AuthHook";
+import { useToast } from "../hooks/useToast";
 
 const Login = () => {
+ const { showToast } = useToast();
   const navigate = useNavigate();
   const { signIn } = useAuth();
 
@@ -24,11 +26,11 @@ const Login = () => {
           signIn();
           navigate("/home");
         } else {
-          console.log(res);
+          showToast(res?.message || "Login failed", "error");
         }
       })
       .catch((err: any) => {
-        console.log(err);
+        showToast(err?.data?.message || err?.message || "Login failed", "error");
       });
   };
 
