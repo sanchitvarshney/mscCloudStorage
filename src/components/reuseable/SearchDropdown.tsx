@@ -15,8 +15,6 @@ import {
 import { ArrowBack } from "@mui/icons-material";
 import { FileItem } from "../../types";
 import FileIcon from "../FileManager/FileIcon";
-import { formatDate } from "../../utils";
-
 interface SearchDropdownProps {
   searchQuery: string;
   files: FileItem[];
@@ -235,7 +233,7 @@ const SearchDropdown: FC<SearchDropdownProps> = ({
                     variant="caption"
                     sx={{ color: "#5f6368", ml: 2 }}
                   >
-                    {formatDate(file.dateShared || file.modified)}
+                    {file.modifiedAt}
                   </Typography>
                 </ListItemButton>
               </ListItem>

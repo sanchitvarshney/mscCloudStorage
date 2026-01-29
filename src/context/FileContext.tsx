@@ -21,56 +21,9 @@ const FileContext = createContext<FileContextType | undefined>(undefined);
 export const FileProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  // Sample data for "Shared with me" view
-  const sampleFiles: FileItem[] = [
-    {
-      id: "1",
-      name: "WorkSheet.xlsx",
-      type: "file",
-      size: 245760,
-      modified: new Date(),
-      dateShared: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // Yesterday
-      sharedBy: "Sanchit Varshney",
-      sharedWith: ["user1@example.com"],
-      isFavourite: false,
-      isTrashed: false,
-      isSpam: false,
-      ownerId: "sanchit",
-      fileType: "xlsx",
-    },
-    {
-      id: "2",
-      name: "socket_part2.zip",
-      type: "file",
-      size: 1572864,
-      modified: new Date(),
-      dateShared: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), // Last month
-      sharedBy: "vishalgupta.rgec@gmail.com",
-      sharedWith: ["user1@example.com"],
-      isFavourite: false,
-      isTrashed: false,
-      isSpam: false,
-      ownerId: "vishal",
-      fileType: "zip",
-    },
-    {
-      id: "3",
-      name: "Himansu_Ranjan_Patra.pdf",
-      type: "file",
-      size: 1048576,
-      modified: new Date(),
-      dateShared: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000), // Older
-      sharedBy: "Ruchima Verma",
-      sharedWith: ["user1@example.com"],
-      isFavourite: false,
-      isTrashed: false,
-      isSpam: false,
-      ownerId: "ruchima",
-      fileType: "pdf",
-    },
-  ];
 
-  const [files, setFiles] = useState<FileItem[]>(sampleFiles);
+
+  const [files, setFiles] = useState<FileItem[]>([]);
   const [currentView, setCurrentView] = useState<ViewType>("home");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [storageInfo, setStorageInfo] = useState<StorageInfo>({
@@ -90,7 +43,7 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({
       id: Date.now().toString(),
       name,
       type: "folder",
-      modified: new Date(),
+      modifiedAt: "",
       sharedWith: [],
       isFavourite: false,
       isTrashed: false,
