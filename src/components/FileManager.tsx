@@ -54,7 +54,14 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
   const [createFolder, { isLoading: isFolderCreating }] =
     useCreateFolderMutation();
-  const [uploadFiles] = useUploadFilesMutation();
+  const [uploadFiles, { isLoading: isUploading }] = useUploadFilesMutation();
+
+  useEffect(() => {
+    if (!isUploading) {
+      return;
+    }
+    showToast("Working please wait ....");
+  }, [isUploading]);
 
   const queryArgs = useMemo(() => {
     const args: { folderId?: string; isTrash?: number } = {};
@@ -67,13 +74,12 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     return args;
   }, [folderId, currentView]);
 
-
-    useEffect(() => {
+  useEffect(() => {
     const storedViewMode = localStorage.getItem("viewMode");
     if (storedViewMode) {
       setViewMode(storedViewMode as "list" | "grid");
     }
-    }, [])
+  }, []);
 
   const {
     data,
@@ -85,7 +91,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
 
   useEffect(() => {
     setDriveData([]);
-  }, [folderId]);
+  }, [folderId, currentView]);
   const [onDeleteFile] = useOnDeleteFileMutation();
   const [onRestoreFile] = useOnRestoreFileMutation();
   const [onFaviroteFile] = useOnFaviroteFileMutation();
@@ -214,10 +220,14 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   };
 
   useEffect(() => {
+    if (isFetching) {
+       setDriveData([]);
+      return; 
+    }
     if (data?.data) {
       const files = Array.isArray(data.data) ? data.data : [];
       setDriveData(files);
-    } else if (data !== undefined && !isFetching) {
+    } else if (data !== undefined) {
       setDriveData([]);
     }
   }, [data, isFetching, folderId, currentView]);
@@ -272,13 +282,17 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       .unwrap()
       .then((res: any) => {
         if (res?.success) {
+          showToast(res?.message || "File(s) uploaded successfully", "success");
           refetch();
         } else {
-          console.error(res?.message || "Upload failed");
+          showToast(res?.message || "Upload failed", "error");
         }
       })
       .catch((err: any) => {
-        console.error(err, "upload error");
+        showToast(
+          err?.data?.message || err?.message || "Upload failed",
+          "error",
+        );
       });
   };
 
@@ -337,15 +351,19 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     createFolder(payload)
       .unwrap()
       .then((res: any) => {
-        console.log(res, "response");
         if (res?.success) {
           setFolderDialogOpen(false);
+          showToast(res?.message || "Folder created successfully", "success");
+          refetch();
         } else {
-          showToast(res?.message);
+          showToast(res?.message || "Failed to create folder", "error");
         }
       })
       .catch((err: any) => {
-        showToast(err?.message || "Failed to create folder", "error");
+        showToast(
+          err?.data?.message || err?.message || "Failed to create folder",
+          "error",
+        );
       });
   };
 

@@ -73,8 +73,7 @@ const CreateFolderDialog: FC<CreateFolderDialogProps> = ({
   const handleCreate = () => {
     if (newFolderName.trim()) {
       onCreate(newFolderName.trim());
-      setNewFolderName("Unnamed Folder");
-      
+     
     }
   };
 

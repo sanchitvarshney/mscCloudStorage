@@ -1,14 +1,29 @@
+import { decryptedData, encryptedData } from "../../utils";
 import { baseApiInstance } from "../apiInstance";
 
 const extendedAuthApi = baseApiInstance.injectEndpoints({
   endpoints: (builder) => ({
     createFolder: builder.mutation({
-      query: (credentials) => ({
-        url: "/folder/create",
-        method: "POST",
-        body: credentials,
-      }),
-      transformResponse: (response: any) => response,
+      query: async (credentials) => {
+        try {
+          const encrypt = await encryptedData(credentials);
+
+          return {
+            url: "/folder/create",
+            method: "POST",
+            body: encrypt,
+          };
+        } catch (err) {
+          console.error("Encryption failed:", err);
+          throw err;
+        }
+      },
+      transformResponse: async (response: any) => {
+        if (!response || typeof response !== "object" || !response.encryptedKey) {
+          return response;
+        }
+        return decryptedData(response);
+      },
     }),
     fetchFiles: builder.query({
       query: ({ folderId, isTrash }) => {
@@ -18,13 +33,17 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
           params.parent_key = folderId;
         }
 
-      
-
         return {
           url: isTrash ? "/folder/trash" : "/folder/list",
           method: "GET",
           params,
         };
+      },
+    transformResponse: async (response: any) => {
+        if (!response || typeof response !== "object" || !response.encryptedKey) {
+          return response;
+        }
+        return decryptedData(response);
       },
     }),
     uploadFiles: builder.mutation({

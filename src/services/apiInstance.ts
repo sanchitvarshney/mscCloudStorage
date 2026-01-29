@@ -5,6 +5,7 @@ import {
   fetchBaseQuery,
   type BaseQueryFn,
 } from "@reduxjs/toolkit/query/react";
+import { keyPair } from "../utils";
 
 const getBaseUrl = (): string => {
   const customDomain = localStorage.getItem("customDomain");
@@ -28,20 +29,28 @@ const getBaseUrl = (): string => {
 
 const baseUrl = getBaseUrl();
 const baseQueryWithReauth: BaseQueryFn = async (args, api, extraOptions) => {
+  // Support async query (e.g. when endpoint needs to encrypt payload first)
+  const resolvedArgs = await Promise.resolve(args);
   const baseQuery = fetchBaseQuery({
     baseUrl,
-    prepareHeaders: (headers) => {
+    prepareHeaders: async (headers) => {
+    
+const publicKey = await crypto.subtle.exportKey("spki", keyPair.publicKey);
+const publicKeyBase64 = btoa(
+  String.fromCharCode(...new Uint8Array(publicKey))
+);
       const user = localStorage.getItem("user");
       const token = user ? JSON.parse(user).token : null;
       if (token) {
         headers.set("x-csrf-token", `${token}`);
+        headers.set("x-client-public-key", publicKeyBase64);
       }
 
       return headers;
     },
   });
 
-  const result = await baseQuery(args, api, extraOptions);
+  const result = await baseQuery(resolvedArgs, api, extraOptions);
 
   if (result.error && result.error.status === 401) {
     localStorage.removeItem("user");
