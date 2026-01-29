@@ -9,23 +9,25 @@ const HomePage: FC = () => {
   const { setCurrentView } = useFileContext();
   const { folderId } = useParams<{ folderId: string }>();
   const { folderName, folderPath } = useLocation()?.state || {};
-  
+
   useEffect(() => {
     const route = location.pathname.split("/").filter(Boolean)[0] || "home";
     const view = getViewFromRoute(route);
     setCurrentView(view);
   }, [location.pathname, setCurrentView]);
-  const folder = useMemo(() => ({
-    folderId: folderId || undefined,
-    folderName: folderName || undefined,
-    folderPath: folderPath || undefined,
-  }), [folderId, folderName, folderPath]);
+  const folder = useMemo(
+    () => ({
+      folderId: folderId || undefined,
+      folderName: folderName || undefined,
+      folderPath: folderPath || undefined,
+    }),
+    [folderId, folderName, folderPath],
+  );
 
- 
   return (
-    <FileManager 
-      key={folderId || 'root'}
-      folder={folder} 
+    <FileManager
+      key={folderId || "root"}
+      folder={folder}
     />
   );
 };

@@ -7,9 +7,10 @@ import { useFetchFilesQuery } from "../services/dirManager/dirServices";
 
 const FolderViewPage: FC = () => {
   const { folderId } = useParams<{ folderId: string }>();
-  const { state } = useLocation();
+  const { state, pathname } = useLocation();
 
   const navigate = useNavigate();
+  const baseRoute = pathname.split("/").filter(Boolean)[0] || "home";
   const [folderName, setFolderName] = useState<string>("Folder");
   const { data } = useFetchFilesQuery(
     { folderId },
@@ -32,6 +33,8 @@ const FolderViewPage: FC = () => {
     navigate(path);
   };
 
+  const backPath = `/${baseRoute}`;
+
   return (
     <Box
       sx={{
@@ -51,7 +54,7 @@ const FolderViewPage: FC = () => {
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <IconButton
-            onClick={() => navigate("/home")}
+            onClick={() => navigate(backPath)}
             sx={{
               color: "#5f6368",
               "&:hover": {
@@ -73,7 +76,7 @@ const FolderViewPage: FC = () => {
             <Link
               component="button"
               variant="body2"
-              onClick={() => handleBreadcrumbClick("/home")}
+              onClick={() => handleBreadcrumbClick(backPath)}
               sx={{
                 color: "#5f6368",
                 textDecoration: "none",

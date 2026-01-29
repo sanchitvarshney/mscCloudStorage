@@ -20,6 +20,7 @@ import {
   useViewFileMutation,
 } from "../services/dirManager/dirServices";
 import { useNavigate } from "react-router-dom";
+import { getRouteFromView } from "../utils/routeMapping";
 import { useToast } from "../hooks/useToast";
 import {
   setDeleting,
@@ -65,6 +66,14 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     }
     return args;
   }, [folderId, currentView]);
+
+
+    useEffect(() => {
+    const storedViewMode = localStorage.getItem("viewMode");
+    if (storedViewMode) {
+      setViewMode(storedViewMode as "list" | "grid");
+    }
+    }, [])
 
   const {
     data,
@@ -147,9 +156,10 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       }
     } catch (err: any) {
       console.error("Failed to restore file:", err);
-      const errorMessage = err?.data?.message || err?.message || "Failed to restore file";
+      const errorMessage =
+        err?.data?.message || err?.message || "Failed to restore file";
       showToast(errorMessage, "error");
-      handleMenuClose(); 
+      handleMenuClose();
     } finally {
       dispatch(setRestoring({ loading: false, fileId: null }));
     }
@@ -165,18 +175,24 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     try {
       const res: any = await onFaviroteFile(payload).unwrap();
       if (res.success) {
-        showToast(res.message || "Favorite status updated successfully", "success");
+        showToast(
+          res.message || "Favorite status updated successfully",
+          "success",
+        );
         handleMenuClose();
         refetch();
       } else {
         showToast(res.message || "Failed to update favorite status", "error");
-        handleMenuClose(); 
+        handleMenuClose();
       }
     } catch (err: any) {
       console.error("Failed to favorite file:", err);
-      const errorMessage = err?.data?.message || err?.message || "Failed to update favorite status";
+      const errorMessage =
+        err?.data?.message ||
+        err?.message ||
+        "Failed to update favorite status";
       showToast(errorMessage, "error");
-      handleMenuClose(); 
+      handleMenuClose();
     } finally {
       dispatch(setFavoriting({ loading: false, fileId: null }));
     }
@@ -185,15 +201,16 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   const handleClickFolder = (folder: any) => {
     localStorage.setItem("folderPath", folder.path);
     setDriveData([]);
-    navigate(`/home/${folder.unique_key}`, {
+    const baseRoute = getRouteFromView(currentView);
+    navigate(`/${baseRoute}/${folder.unique_key}`, {
       state: { folderName: folder.name, folderPath: folder.path },
     });
   };
 
   const handleBack = () => {
     setDriveData([]);
-    // Clear location state and navigate
-    navigate("/home", { replace: true, state: null });
+    const baseRoute = getRouteFromView(currentView);
+    navigate(`/${baseRoute}`, { replace: true, state: null });
   };
 
   useEffect(() => {
@@ -215,15 +232,14 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
         files: FileList;
         formDataCreated?: boolean;
       };
-      const localStorePath = localStorage.getItem("folderPath") ;
-      console.log(localStorePath,"value")
+      const localStorePath = localStorage.getItem("folderPath");
       if (files) {
         const formData = new FormData();
         Array.from(files).forEach((file) => {
           formData.append("file", file);
           formData.append(
             "folder_path",
-            folderName &&  localStorePath ? `${localStorePath}` : "/home",
+            folderName && localStorePath ? `${localStorePath}` : "/home",
           );
           //@ts-ignore
           formData.append("folder_id", folderId || null);

@@ -9,11 +9,15 @@ interface ViewToggleProps {
 }
 
 const ViewToggle: FC<ViewToggleProps> = ({ viewMode, onViewChange }) => {
+
   return (
     <ToggleButtonGroup
       value={viewMode}
       exclusive
-      onChange={(_, newMode) => newMode && onViewChange(newMode)}
+      onChange={(_, newMode) => {
+        localStorage.setItem("viewMode", newMode);
+        newMode && onViewChange(newMode)
+      }}
       size="small"
       sx={{
         background: "#f4f6f8",

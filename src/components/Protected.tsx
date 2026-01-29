@@ -17,8 +17,6 @@ const Protected: React.FC<ProtectedProps> = ({
  const [isLoading, setIsLoading] = useState(true);
   const isAuthenticated = !!localStorage.getItem("user");
 
-  console.log(isAuthenticated, authentication,"user")
-
   const checkAuth = useCallback(async () => {
     await new Promise((resolve) => setTimeout(resolve, 500));
 

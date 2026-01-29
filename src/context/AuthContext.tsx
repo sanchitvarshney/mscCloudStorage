@@ -33,6 +33,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signOut = useCallback(() => {  
     localStorage.removeItem("user");
+    localStorage.removeItem("folderPath");
       window.location.href = "/signin";
     setUser(null);
   }, []);

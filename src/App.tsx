@@ -23,10 +23,10 @@ const App: React.FC = () => {
           >
             <Route index element={<Navigate to="/home" replace />} />
             <Route path="home/:folderId?" element={<HomePage />} />
-            <Route path="shared-drives" element={<HomePage />} />
-            <Route path="shared-with-me" element={<HomePage />} />
-            <Route path="starred" element={<HomePage />} />
-            <Route path="trash" element={<HomePage />} />
+            <Route path="shared-drives/:folderId?" element={<HomePage />} />
+            <Route path="shared-with-me/:folderId?" element={<HomePage />} />
+            <Route path="starred/:folderId?" element={<HomePage />} />
+            <Route path="trash/:folderId?" element={<HomePage />} />
 
             <Route path="offline" element={<OfflinePage />} />
           </Route>
