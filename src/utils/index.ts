@@ -1,3 +1,9 @@
+
+
+//@ts-ignore
+const secretKey = import.meta.env.VITE_SECRET_KEY;
+
+
 export const formatDate = (date: Date) => {
   const now = new Date();
   const diffTime = Math.abs(now?.getTime() - date?.getTime());
@@ -66,4 +72,134 @@ export const groupFilesByDate = (files: any[]) => {
   });
 
   return groups;
+};
+
+
+
+export const keyPair = await window.crypto.subtle.generateKey(
+  {
+    name: "RSA-OAEP",
+    modulusLength: 2048,
+    publicExponent: new Uint8Array([1, 0, 1]),
+    hash: "SHA-256",
+  },
+  true,
+  ["encrypt", "decrypt"],
+);
+
+function base64ToBytes(base64: string) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+
+  return bytes;
+}
+
+function bytesToBase64(bytes: ArrayBuffer | Uint8Array): string {
+  const arr = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  return btoa(String.fromCharCode(...arr));
+}
+
+
+
+export const decryptedData = async (payload: any) => {
+
+  // RSA decrypt AES key
+  const encryptedKeyBytes = base64ToBytes(payload.encryptedKey);
+
+  const aesKeyRaw = await crypto.subtle.decrypt(
+    { name: "RSA-OAEP" },
+    keyPair.privateKey,
+    encryptedKeyBytes
+  );
+
+  const aesKey = await crypto.subtle.importKey(
+    "raw",
+    aesKeyRaw,
+    "AES-GCM",
+    false,
+    ["decrypt"]
+  );
+
+  // Decode parts
+  const iv = base64ToBytes(payload.iv);
+  const ciphertext = base64ToBytes(payload.data);
+  const tag = base64ToBytes(payload.tag);
+
+  // ✅ CONCAT ciphertext + tag (THIS IS CRITICAL)
+  const combined = new Uint8Array(ciphertext.length + tag.length);
+  combined.set(ciphertext);
+  combined.set(tag, ciphertext.length);
+
+  // AES-GCM decrypt
+  const decrypted = await crypto.subtle.decrypt(
+    {
+      name: "AES-GCM",
+      iv: iv,
+      tagLength: 128,
+    },
+    aesKey,
+    combined
+  );
+
+  const decoded = new TextDecoder().decode(decrypted);
+
+  return JSON.parse(decoded);
+};
+
+
+export const encryptedData = async (payload: unknown): Promise<{
+  encryptedKey: string;
+  iv: string;
+  data: string;
+  tag: string;
+}> => {
+  // Generate random AES key for AES-GCM
+  const aesKey = await crypto.subtle.generateKey(
+    { name: "AES-GCM", length: 256 },
+    true,
+    ["encrypt"]
+  );
+
+  // Generate random IV (12 bytes for GCM)
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+
+  // Encode payload to bytes
+  const encoded = new TextEncoder().encode(JSON.stringify(payload));
+
+  // AES-GCM encrypt (returns ciphertext + tag combined)
+  const combined = await crypto.subtle.encrypt(
+    {
+      name: "AES-GCM",
+      iv,
+      tagLength: 128,
+    },
+    aesKey,
+    encoded
+  );
+
+  // Split ciphertext and tag (last 16 bytes = 128-bit tag)
+  const tagLengthBytes = 16;
+  const ciphertext = combined.slice(0, combined.byteLength - tagLengthBytes);
+  const tag = combined.slice(combined.byteLength - tagLengthBytes);
+
+  // Export AES key and encrypt it with our public key (RSA-OAEP)
+  const rawKey = await crypto.subtle.exportKey("raw", aesKey);
+  const encryptedKeyBytes = await crypto.subtle.encrypt(
+    { name: "RSA-OAEP" },
+    keyPair.publicKey,
+    rawKey
+  );
+
+ 
+
+  return {
+    encryptedKey: bytesToBase64(encryptedKeyBytes),
+    iv: bytesToBase64(iv),
+    data: bytesToBase64(ciphertext),
+    tag: bytesToBase64(tag),
+  };
 };
