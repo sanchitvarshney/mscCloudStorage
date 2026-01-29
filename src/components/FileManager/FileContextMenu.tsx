@@ -52,44 +52,6 @@ const FileContextMenu: FC<FileContextMenuProps> = ({
 
   return (
     <Menu anchorEl={anchorEl} open={open} onClose={onClose}>
-      {file && file.type === "file" && (
-        <MenuItem onClick={() => file && onDownload(file)}>
-          <Download sx={{ mr: 1 }} fontSize="small" />
-          Download
-        </MenuItem>
-      )}
-      <MenuItem onClick={() => file && onShare(file)}>
-        <Share sx={{ mr: 1 }} fontSize="small" />
-        Share
-      </MenuItem>
-      <MenuItem
-        onClick={() => {
-          if (file && !isFileFavoriting) {
-            onToggleFavourite(file);
-          }
-        }}
-        disabled={isFileFavoriting}
-      >
-        {file?.favorite ? (
-          <>
-            {isFileFavoriting ? (
-              <CircularProgress size={15} sx={{ mr: 1 }} />
-            ) : (
-              <Star sx={{ mr: 1 }} fontSize="small" />
-            )}
-            Remove from Favourites
-          </>
-        ) : (
-          <>
-            {isFileFavoriting ? (
-              <CircularProgress size={15} sx={{ mr: 1 }} />
-            ) : (
-              <StarBorder sx={{ mr: 1 }} fontSize="small" />
-            )}
-            Add to Favourites
-          </>
-        )}
-      </MenuItem>
       {currentView === "trash" ? (
         <MenuItem
           onClick={() => {
@@ -108,22 +70,62 @@ const FileContextMenu: FC<FileContextMenuProps> = ({
           Restore
         </MenuItem>
       ) : (
-        <MenuItem
-          onClick={() => {
-            if (file && !isFileDeleting) {
-              onDelete(file);
-            }
-            onClose();
-          }}
-          disabled={isFileDeleting}
-        >
-          {isFileDeleting ? (
-            <CircularProgress size={15} sx={{ mr: 1 }} />
-          ) : (
-            <Delete sx={{ mr: 1 }} fontSize="small" />
+        <>
+          {file && file.type === "file" && (
+            <MenuItem onClick={() => file && onDownload(file)}>
+              <Download sx={{ mr: 1 }} fontSize="small" />
+              Download
+            </MenuItem>
           )}
-          Trash
-        </MenuItem>
+          <MenuItem onClick={() => file && onShare(file)}>
+            <Share sx={{ mr: 1 }} fontSize="small" />
+            Share
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              if (file && !isFileFavoriting) {
+                onToggleFavourite(file);
+              }
+            }}
+            disabled={isFileFavoriting}
+          >
+            {file?.favorite ? (
+              <>
+                {isFileFavoriting ? (
+                  <CircularProgress size={15} sx={{ mr: 1 }} />
+                ) : (
+                  <Star sx={{ mr: 1 }} fontSize="small" />
+                )}
+                Remove from Favourites
+              </>
+            ) : (
+              <>
+                {isFileFavoriting ? (
+                  <CircularProgress size={15} sx={{ mr: 1 }} />
+                ) : (
+                  <StarBorder sx={{ mr: 1 }} fontSize="small" />
+                )}
+                Add to Favourites
+              </>
+            )}
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              if (file && !isFileDeleting) {
+                onDelete(file);
+              }
+              onClose();
+            }}
+            disabled={isFileDeleting}
+          >
+            {isFileDeleting ? (
+              <CircularProgress size={15} sx={{ mr: 1 }} />
+            ) : (
+              <Delete sx={{ mr: 1 }} fontSize="small" />
+            )}
+            Trash
+          </MenuItem>
+        </>
       )}
     </Menu>
   );

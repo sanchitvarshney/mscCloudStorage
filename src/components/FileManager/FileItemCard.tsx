@@ -12,6 +12,7 @@ import { FileItem } from "../../types";
 import FileIcon from "./FileIcon";
 import { formatFileSize } from "../../utils";
 import { useSelector } from "react-redux";
+import { useFileContext } from "../../context/FileContext";
 
 interface FileItemCardProps {
   file: FileItem;
@@ -29,6 +30,7 @@ const FileItemCard: FC<FileItemCardProps> = ({
   onClickFolder,
 }) => {
   const [isHover, setIsHover] = useState(false);
+ const {currentView} = useFileContext();
   const { isViewing, viewingFileId, isRestoring, restoringFileId } =
     useSelector((state: any) => state.loadingState);
   const isFileViewing = isViewing && viewingFileId === file?.unique_key;
@@ -50,7 +52,7 @@ const FileItemCard: FC<FileItemCardProps> = ({
   return (
     <Card
       onDoubleClick={() => {
-        if (file.type === "folder" && onClickFolder) {
+        if (file.type === "folder" && onClickFolder && currentView !== "trash") {
           onClickFolder(file);
         }
       }}
@@ -65,6 +67,7 @@ const FileItemCard: FC<FileItemCardProps> = ({
         opacity: isFileRestoring ? 0.6 : 1,
         pointerEvents: isFileRestoring ? "none" : "auto",
         transition: "opacity 0.2s ease",
+        cursor: currentView === "trash" || file?.type === "file" ? "cursor" : "pointer",
       }}
     >
       <Box
@@ -149,7 +152,7 @@ const FileItemCard: FC<FileItemCardProps> = ({
           )}
         </Box>
 
-        {file.type === "file" && (
+        {file.type === "file" &&  currentView !== "trash" && (
           <Box
             sx={{
               position: "absolute",

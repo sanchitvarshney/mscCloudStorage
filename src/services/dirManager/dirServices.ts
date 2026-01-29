@@ -1,4 +1,4 @@
-import { decryptedData, encryptedData } from "../../utils";
+import { decryptedData, encryptPayload } from "../../utils";
 import { baseApiInstance } from "../apiInstance";
 
 const extendedAuthApi = baseApiInstance.injectEndpoints({
@@ -6,7 +6,7 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
     createFolder: builder.mutation({
       query: async (credentials) => {
         try {
-          const encrypt = await encryptedData(credentials);
+          const encrypt = await encryptPayload(credentials);
 
           return {
             url: "/folder/create",
@@ -40,13 +40,16 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
         };
       },
     transformResponse: async (response: any) => {
+     
         if (!response || typeof response !== "object" || !response.encryptedKey) {
           return response;
         }
+     
         return decryptedData(response);
       },
     }),
     uploadFiles: builder.mutation({
+      
       query: (credentials) => ({
         url: "/file/upload",
         method: "POST",

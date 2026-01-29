@@ -26,7 +26,7 @@ const App: React.FC = () => {
             <Route path="shared-drives/:folderId?" element={<HomePage />} />
             <Route path="shared-with-me/:folderId?" element={<HomePage />} />
             <Route path="starred/:folderId?" element={<HomePage />} />
-            <Route path="trash/:folderId?" element={<HomePage />} />
+            <Route path="trash" element={<HomePage />} />
 
             <Route path="offline" element={<OfflinePage />} />
           </Route>

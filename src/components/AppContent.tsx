@@ -21,6 +21,7 @@ import { useConnectivity } from "../hooks/useConnectivity";
 import Profile from "./Profile";
 import { useAuth } from "../hooks/AuthHook";
 import DomainSettings from "./DomainSettings";
+import { useGetProfileQuery } from "../services/auth";
 
 const AppContent: React.FC = () => {
   const { user, signOut } = useAuth();
@@ -36,6 +37,7 @@ const AppContent: React.FC = () => {
   const [domainSettingsDrawerOpen, setDomainSettingsDrawerOpen] =
     useState(false);
   const { isOnline } = useConnectivity();
+  const { data: profileData } = useGetProfileQuery({});
 
   useEffect(() => {
     if (!isOnline && location.pathname !== "/offline") {
@@ -386,7 +388,8 @@ const AppContent: React.FC = () => {
         title="Account Details"
         width={600}
       >
-        <Profile />
+        {/* @ts-ignore */}
+        <Profile userData={profileData} />
       </RightDrawer>
 
       {/* Domain Settings Drawer */}

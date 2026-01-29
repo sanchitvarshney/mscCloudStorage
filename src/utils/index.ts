@@ -2,6 +2,8 @@
 
 //@ts-ignore
 const secretKey = import.meta.env.VITE_SECRET_KEY;
+//@ts-ignore
+const serverPublicKeyPem = import.meta.env.VITE_SERVER_PUBLIC_KEY_PEM;
 
 
 export const formatDate = (date: Date) => {
@@ -96,10 +98,6 @@ function base64ToBytes(base64: string) {
   return bytes;
 }
 
-function bytesToBase64(bytes: ArrayBuffer | Uint8Array): string {
-  const arr = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
-  return btoa(String.fromCharCode(...arr));
-}
 
 
 
@@ -150,57 +148,75 @@ export const decryptedData = async (payload: any) => {
 };
 
 
-export const encryptedData = async (payload: unknown): Promise<{
-  encryptedKey: string;
-  iv: string;
-  data: string;
-  tag: string;
-}> => {
-  const keyPair = await keyPairPromise;
+function bytesToBase64(bytes: ArrayBuffer | Uint8Array): string {
+  const arr = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  return btoa(String.fromCharCode(...arr));
+}
 
-  // Generate random AES key for AES-GCM
+async function importServerPublicKey(pem:any) {
+  const binaryDer = Uint8Array.from(
+    atob(
+      pem
+        .replace("-----BEGIN PUBLIC KEY-----", "")
+        .replace("-----END PUBLIC KEY-----", "")
+        .replace(/\s/g, "")
+    ),
+    c => c.charCodeAt(0)
+  );
+
+  return crypto.subtle.importKey(
+    "spki",
+    binaryDer.buffer,
+    {
+      name: "RSA-OAEP",
+      hash: "SHA-256", // 🚨 MUST MATCH BACKEND
+    },
+    false,
+    ["encrypt"]
+  );
+}
+export async function encryptPayload(payload:any, ) {
+
+  const publicKey = await importServerPublicKey(serverPublicKeyPem);
+
+  // AES key
   const aesKey = await crypto.subtle.generateKey(
     { name: "AES-GCM", length: 256 },
     true,
     ["encrypt"]
   );
 
-  // Generate random IV (12 bytes for GCM)
   const iv = crypto.getRandomValues(new Uint8Array(12));
-
-  // Encode payload to bytes
   const encoded = new TextEncoder().encode(JSON.stringify(payload));
 
-  // AES-GCM encrypt (returns ciphertext + tag combined)
-  const combined = await crypto.subtle.encrypt(
-    {
-      name: "AES-GCM",
-      iv,
-      tagLength: 128,
-    },
+  // Encrypt data
+  const encrypted = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv },
     aesKey,
     encoded
   );
 
-  // Split ciphertext and tag (last 16 bytes = 128-bit tag)
-  const tagLengthBytes = 16;
-  const ciphertext = combined.slice(0, combined.byteLength - tagLengthBytes);
-  const tag = combined.slice(combined.byteLength - tagLengthBytes);
+  // Export AES key
+  const rawAesKey = await crypto.subtle.exportKey("raw", aesKey);
 
-  // Export AES key and encrypt it with our public key (RSA-OAEP)
-  const rawKey = await crypto.subtle.exportKey("raw", aesKey);
-  const encryptedKeyBytes = await crypto.subtle.encrypt(
-    { name: "RSA-OAEP" },
-    keyPair.publicKey,
-    rawKey
+  // 🔐 RSA-OAEP encrypt AES key
+  const encryptedAesKey = await crypto.subtle.encrypt(
+    { name: "RSA-OAEP" }, // hash already bound in key
+    publicKey,
+    rawAesKey
   );
 
- 
+  // Split tag (last 16 bytes)
+  const encryptedBytes = new Uint8Array(encrypted);
+  const tag = encryptedBytes.slice(-16);
+  const cipherText = encryptedBytes.slice(0, -16);
+
+
 
   return {
-    encryptedKey: bytesToBase64(encryptedKeyBytes),
+    encryptedKey: bytesToBase64(new Uint8Array(encryptedAesKey)),
     iv: bytesToBase64(iv),
-    data: bytesToBase64(ciphertext),
     tag: bytesToBase64(tag),
+    data: bytesToBase64(cipherText),
   };
-};
+}

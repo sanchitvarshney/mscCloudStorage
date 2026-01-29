@@ -46,8 +46,9 @@ const baseQueryWithReauth: BaseQueryFn = async (args, api, extraOptions) => {
       const token = user ? JSON.parse(user).token : null;
       if (token) {
         headers.set("x-csrf-token", `${token}`);
-        headers.set("x-client-public-key", publicKeyBase64);
+       
       }
+       headers.set("x-client-public-key", publicKeyBase64);
 
       return headers;
     },

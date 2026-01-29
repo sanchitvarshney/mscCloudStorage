@@ -20,8 +20,14 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
         return decryptedData(response);
       },
     }),
+     getProfile: builder.query({
+      query: ({}) => ({
+        url: `/login/user/manage-profile`,
+        method: "GET",
+      }),
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useLoginGoogleMutation } = extendedAuthApi;
+export const { useLoginGoogleMutation, useGetProfileQuery } = extendedAuthApi;

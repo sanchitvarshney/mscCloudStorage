@@ -7,7 +7,7 @@ import {
   TextField,
   Divider,
   Paper,
-  Grid,
+  // Grid,
   List,
   ListItem,
   ListItemIcon,
@@ -17,25 +17,17 @@ import {
   Edit,
   Email,
   Phone,
-  LocationOn,
-  Security,
-  Notifications,
-  Language,
-  DarkMode,
+  // LocationOn,
+  // Security,
+  // Notifications,
+  // Language,
+  // DarkMode,
   CheckCircle,
 } from "@mui/icons-material";
 
-const Profile: FC = () => {
+const Profile: FC = ({userData}:any) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] = useState({
-    name: "John Doe",
-    email: "john.doe@example.com",
-    phone: "+1 (555) 123-4567",
-    location: "San Francisco, CA",
-    joinDate: "January 2023",
-    storageUsed: 0,
-    storageTotal: 15,
-  });
+  const [profileData, setProfileData] = useState(userData ?? {});
 
   const handleEdit = () => {
     setIsEditing(!isEditing);
@@ -47,7 +39,7 @@ const Profile: FC = () => {
   };
 
   const handleChange = (field: string, value: string) => {
-    setProfileData((prev) => ({ ...prev, [field]: value }));
+    setProfileData((prev:any) => ({ ...prev, [field]: value }));
   };
 
   const storagePercentage = (profileData.storageUsed / profileData.storageTotal) * 100;
@@ -74,7 +66,7 @@ const Profile: FC = () => {
               fontWeight: 500,
             }}
           >
-            {profileData.name.charAt(0).toUpperCase()}
+            {profileData?.name?.charAt(0).toUpperCase() ?? ""}
           </Avatar>
           <Box sx={{ flex: 1 }}>
             {isEditing ? (
@@ -225,35 +217,13 @@ const Profile: FC = () => {
                 }}
               />
             </ListItem>
-            <Divider />
-            <ListItem>
-              <ListItemIcon sx={{ minWidth: 40, color: "#5f6368" }}>
-                <LocationOn />
-              </ListItemIcon>
-              <ListItemText
-                primary="Location"
-                secondary={isEditing ? (
-                  <TextField
-                    value={profileData.location}
-                    onChange={(e) => handleChange("location", e.target.value)}
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                  />
-                ) : (
-                  profileData.location
-                )}
-                secondaryTypographyProps={{
-                  sx: { color: "#202124", mt: 0.5 },
-                }}
-              />
-            </ListItem>
+         
           </List>
         </Paper>
       </Box>
 
       {/* Quick Actions */}
-      <Box>
+      {/* <Box>
         <Typography variant="h6" sx={{ fontWeight: 500, color: "#202124", mb: 2 }}>
           Quick Actions
         </Typography>
@@ -286,7 +256,7 @@ const Profile: FC = () => {
             </Grid>
           ))}
         </Grid>
-      </Box>
+      </Box> */}
     </Box>
   );
 };

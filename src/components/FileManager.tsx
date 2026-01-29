@@ -85,14 +85,12 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     }
   }, []);
 
-  const { data, refetch, isLoading, isFetching } = useFetchFilesQuery(
-    queryArgs,
-    {
-      refetchOnMountOrArgChange: true,
-    },
-  );
+  const { data, refetch, isLoading } = useFetchFilesQuery(queryArgs, {
+    refetchOnMountOrArgChange: true,
+  });
 
-  const isFetchingFiles = isLoading || isFetching;
+
+  const isFetchingFiles = isLoading;
 
   useEffect(() => {
     setDriveData([]);
@@ -129,7 +127,6 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
         showToast(res.message, "error");
       }
     } catch (err) {
-      console.error("Failed to delete file:", err);
       showToast("Failed to delete file", "error");
     } finally {
       dispatch(setDeleting({ loading: false, fileId: null }));
@@ -158,17 +155,16 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     try {
       const res: any = await onRestoreFile(payload).unwrap();
       if (res.success) {
-        showToast(res.message || "File restored successfully", "success");
+        showToast(res.message, "success");
         refetch();
         handleMenuClose();
       } else {
-        showToast(res.message || "Failed to restore file", "error");
+        showToast(res.message, "error");
         handleMenuClose();
       }
     } catch (err: any) {
-      console.error("Failed to restore file:", err);
       const errorMessage =
-        err?.data?.message || err?.message || "Failed to restore file";
+        err?.data?.message || err?.message;
       showToast(errorMessage, "error");
       handleMenuClose();
     } finally {
@@ -187,17 +183,16 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       const res: any = await onFaviroteFile(payload).unwrap();
       if (res.success) {
         showToast(
-          res.message || "Favorite status updated successfully",
+          res.message ,
           "success",
         );
         handleMenuClose();
         refetch();
       } else {
-        showToast(res.message || "Failed to update favorite status", "error");
+        showToast(res.message, "error");
         handleMenuClose();
       }
     } catch (err: any) {
-      console.error("Failed to favorite file:", err);
       const errorMessage =
         err?.data?.message ||
         err?.message ||
@@ -256,7 +251,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
             folderName && localStorePath ? `${localStorePath}` : "/home",
           );
           //@ts-ignore
-          formData.append("folder_id", folderId || null);
+          formData.append("folder_id", folderId);
         });
 
         handleFileUploadChange(formData);
@@ -286,10 +281,10 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       .unwrap()
       .then((res: any) => {
         if (res?.success) {
-          showToast(res?.message || "File(s) uploaded successfully", "success");
+          showToast(res?.message, "success");
           refetch();
         } else {
-          showToast(res?.message || "Upload failed", "error");
+          showToast(res?.message, "error");
         }
       })
       .catch((err: any) => {
@@ -357,10 +352,10 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       .then((res: any) => {
         if (res?.success) {
           setFolderDialogOpen(false);
-          showToast(res?.message || "Folder created successfully", "success");
+          showToast(res?.message, "success");
           refetch();
         } else {
-          showToast(res?.message || "Failed to create folder", "error");
+          showToast(res?.message , "error");
         }
       })
       .catch((err: any) => {
