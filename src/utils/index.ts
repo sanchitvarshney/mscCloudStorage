@@ -2,8 +2,10 @@
 
 //@ts-ignore
 const secretKey = import.meta.env.VITE_SECRET_KEY;
+
+const serverPublicKeyPem =
 //@ts-ignore
-const serverPublicKeyPem = import.meta.env.VITE_SERVER_PUBLIC_KEY_PEM;
+  import.meta.env.VITE_SERVER_PUBLIC_KEY_PEM.replace(/\\n/g, "\n");
 
 
 export const formatDate = (date: Date) => {
