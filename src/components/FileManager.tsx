@@ -28,6 +28,7 @@ import {
   setRestoring,
   setFetching,
   setViewing,
+  setDownloading,
 } from "../slices/loadingSlice";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -85,12 +86,15 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     }
   }, []);
 
-  const { data, refetch, isLoading, isFetching } = useFetchFilesQuery(queryArgs, {
+  const {
+    data,
+    refetch,
+    isLoading,
+  } = useFetchFilesQuery(queryArgs, {
     refetchOnMountOrArgChange: true,
   });
 
-
-  const isFetchingFiles = isLoading;
+  const isFetchingFiles = isLoading ;
 
   useEffect(() => {
     setDriveData([]);
@@ -155,16 +159,16 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     try {
       const res: any = await onRestoreFile(payload).unwrap();
       if (res.success) {
-        showToast(res.message, "success");
+        showToast(res.message || "File restored successfully", "success");
         refetch();
         handleMenuClose();
       } else {
-        showToast(res.message, "error");
+        showToast(res.message || "Failed to restore file", "error");
         handleMenuClose();
       }
     } catch (err: any) {
       const errorMessage =
-        err?.data?.message || err?.message;
+        err?.data?.message || err?.message || "Failed to restore file";
       showToast(errorMessage, "error");
       handleMenuClose();
     } finally {
@@ -183,16 +187,17 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       const res: any = await onFaviroteFile(payload).unwrap();
       if (res.success) {
         showToast(
-          res.message ,
+          res.message || "Favorite status updated successfully",
           "success",
         );
         handleMenuClose();
         refetch();
       } else {
-        showToast(res.message, "error");
+        showToast(res.message || "Failed to update favorite status", "error");
         handleMenuClose();
       }
     } catch (err: any) {
+      console.error("Failed to favorite file:", err);
       const errorMessage =
         err?.data?.message ||
         err?.message ||
@@ -221,7 +226,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
 
   useEffect(() => {
     if (isFetchingFiles) {
-      return;
+      return; 
     }
     if (data?.data) {
       const files = Array.isArray(data.data) ? data.data : [];
@@ -230,6 +235,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       setDriveData([]);
     }
   }, [data, isFetchingFiles, folderId]);
+
 
   useEffect(() => {
     const handleCreateFolder = () => {
@@ -281,10 +287,10 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       .unwrap()
       .then((res: any) => {
         if (res?.success) {
-          showToast(res?.message, "success");
+          showToast(res?.message || "File(s) uploaded successfully", "success");
           refetch();
         } else {
-          showToast(res?.message, "error");
+          showToast(res?.message || "Upload failed", "error");
         }
       })
       .catch((err: any) => {
@@ -352,10 +358,10 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       .then((res: any) => {
         if (res?.success) {
           setFolderDialogOpen(false);
-          showToast(res?.message, "success");
+          showToast(res?.message || "Folder created successfully", "success");
           refetch();
         } else {
-          showToast(res?.message , "error");
+          showToast(res?.message || "Failed to create folder", "error");
         }
       })
       .catch((err: any) => {
@@ -366,17 +372,33 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       });
   };
 
-  const handleDownload = (file: FileItem) => {
-    const blob = new Blob(["File content"], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = file.name;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const handleDownload = async (file: FileItem) => {
+    if (!file.unique_key) {
+      showToast("Cannot download: file key missing", "error");
+      return;
+    }
+    dispatch(setDownloading({ loading: true, fileId: file.unique_key }));
+    try {
+      const blob = await viewFile({ file_key: file.unique_key }).unwrap();
+      if (!blob) {
+        showToast("No file data received", "error");
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = file.name ?? "download";
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast("Download started", "success");
+    } catch (err: any) {
+      console.error("Download failed:", err);
+      showToast(err?.data?.message ?? err?.message ?? "Download failed", "error");
+    } finally {
+      dispatch(setDownloading({ loading: false, fileId: null }));
+    }
   };
+
 
   const handleView = async (file: any) => {
     const payload = { file_key: file.unique_key };
@@ -425,6 +447,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     setSelectedFile(null);
   };
 
+
   return (
     <Box sx={{ flexGrow: 1, backgroundColor: "#fff" }}>
       <FileManagerHeader
@@ -434,7 +457,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
         folder={folderName}
         onBack={handleBack}
         onRefresh={refetch}
-        isRefreshing={isFetchingFiles || isFetching}
+        isRefreshing={isFetchingFiles}
       />
 
       <Box sx={{ p: 3 }}>

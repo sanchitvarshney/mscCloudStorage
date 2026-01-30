@@ -31,10 +31,11 @@ const FileItemCard: FC<FileItemCardProps> = ({
 }) => {
   const [isHover, setIsHover] = useState(false);
  const {currentView} = useFileContext();
-  const { isViewing, viewingFileId, isRestoring, restoringFileId,  } =
+  const { isViewing, viewingFileId, isRestoring, restoringFileId, isDownloading, downloadingFileId } =
     useSelector((state: any) => state.loadingState);
   const isFileViewing = isViewing && viewingFileId === file?.unique_key;
   const isFileRestoring = isRestoring && restoringFileId === file?.unique_key;
+  const isFileDownloading = isDownloading && downloadingFileId === file?.unique_key;
 
   const handleDownload = (e: React.MouseEvent, file: FileItem) => {
     e.stopPropagation();
@@ -177,9 +178,9 @@ const FileItemCard: FC<FileItemCardProps> = ({
                   alignItems: "center",
                 }}
               >
-                {file.type === "file" && onDownload && (
+                {(file.type === "file"  ) && onDownload &&  (
                   <IconButton
-                    onClick={(e) => handleDownload(e,file)}
+                    onClick={(e) => handleDownload(e, file)}
                     sx={{
                       backgroundColor: "#fff",
                       color: "#202124",
@@ -192,7 +193,11 @@ const FileItemCard: FC<FileItemCardProps> = ({
                       },
                     }}
                   >
-                    <Download />
+                    {isFileDownloading ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      <Download />
+                    )}
                   </IconButton>
                 )}
                 {onView && (

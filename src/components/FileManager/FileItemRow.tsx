@@ -37,10 +37,11 @@ const FileItemRow: FC<FileItemRowProps> = ({
   onClickFolder,
 }) => {
   const [isHover, setIsHover] = useState(false);
-  const { isViewing, viewingFileId, isRestoring, restoringFileId } =
+  const { isViewing, viewingFileId, isRestoring, restoringFileId, isDownloading, downloadingFileId } =
     useSelector((state: any) => state.loadingState);
   const isFileViewing = isViewing && viewingFileId === file?.unique_key;
   const isFileRestoring = isRestoring && restoringFileId === file?.unique_key;
+  const isFileDownloading = isDownloading && downloadingFileId === file?.unique_key;
 
   const handleDoubleClick = () => {
     if (file.type === "folder" && onClickFolder) {
@@ -156,7 +157,11 @@ const FileItemRow: FC<FileItemRowProps> = ({
                       p: 0.5,
                     }}
                   >
-                    <Download fontSize="small" />
+                    {isFileDownloading ? (
+                      <CircularProgress size={16} />
+                    ) : (
+                      <Download fontSize="small" />
+                    )}
                   </IconButton>
                 )}
                 {onView && (
@@ -261,13 +266,18 @@ const FileItemRow: FC<FileItemRowProps> = ({
                     p: 0.5,
                   }}
                 >
-                  <Download fontSize="small" />
+                  {isFileDownloading ? (
+                    <CircularProgress size={16} />
+                  ) : (
+                    <Download fontSize="small" />
+                  )}
                 </IconButton>
               )}
               {onView && (
                 <IconButton
                   size="small"
                   onClick={handleView}
+                  disabled={isFileViewing}
                   sx={{
                     p: 0.5,
                   }}

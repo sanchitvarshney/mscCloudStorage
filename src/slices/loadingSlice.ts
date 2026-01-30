@@ -6,10 +6,12 @@ interface LoadingState {
   isRestoring: boolean;
   isFetching: boolean;
   isViewing: boolean;
+  isDownloading: boolean;
   deletingFileId: string | null;
   favoritingFileId: string | null;
   restoringFileId: string | null;
   viewingFileId: string | null;
+  downloadingFileId: string | null;
 }
 
 const initialState: LoadingState = {
@@ -18,10 +20,12 @@ const initialState: LoadingState = {
   isRestoring: false,
   isFetching: false,
   isViewing: false,
+  isDownloading: false,
   deletingFileId: null,
   favoritingFileId: null,
   restoringFileId: null,
   viewingFileId: null,
+  downloadingFileId: null,
 };
 
 const loadingSlice = createSlice({
@@ -59,16 +63,25 @@ const loadingSlice = createSlice({
       state.isViewing = action.payload.loading;
       state.viewingFileId = action.payload.fileId || null;
     },
+    setDownloading: (
+      state,
+      action: PayloadAction<{ loading: boolean; fileId?: string | null }>,
+    ) => {
+      state.isDownloading = action.payload.loading;
+      state.downloadingFileId = action.payload.fileId || null;
+    },
     resetLoading: (state) => {
       state.isDeleting = false;
       state.isFavoriting = false;
       state.isRestoring = false;
       state.isFetching = false;
       state.isViewing = false;
+      state.isDownloading = false;
       state.deletingFileId = null;
       state.favoritingFileId = null;
       state.restoringFileId = null;
       state.viewingFileId = null;
+      state.downloadingFileId = null;
     },
   },
 });
@@ -79,6 +92,7 @@ export const {
   setRestoring,
   setFetching,
   setViewing,
+  setDownloading,
   resetLoading,
 } = loadingSlice.actions;
 export default loadingSlice.reducer;
