@@ -31,12 +31,12 @@ const FileItemCard: FC<FileItemCardProps> = ({
 }) => {
   const [isHover, setIsHover] = useState(false);
  const {currentView} = useFileContext();
-  const { isViewing, viewingFileId, isRestoring, restoringFileId } =
+  const { isViewing, viewingFileId, isRestoring, restoringFileId,  } =
     useSelector((state: any) => state.loadingState);
   const isFileViewing = isViewing && viewingFileId === file?.unique_key;
   const isFileRestoring = isRestoring && restoringFileId === file?.unique_key;
 
-  const handleDownload = (e: React.MouseEvent) => {
+  const handleDownload = (e: React.MouseEvent, file: FileItem) => {
     e.stopPropagation();
     if (onDownload && file.type === "file") {
       onDownload(file);
@@ -179,7 +179,7 @@ const FileItemCard: FC<FileItemCardProps> = ({
               >
                 {file.type === "file" && onDownload && (
                   <IconButton
-                    onClick={handleDownload}
+                    onClick={(e) => handleDownload(e,file)}
                     sx={{
                       backgroundColor: "#fff",
                       color: "#202124",
