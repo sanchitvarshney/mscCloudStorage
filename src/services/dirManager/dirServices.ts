@@ -19,7 +19,11 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
         }
       },
       transformResponse: async (response: any) => {
-        if (!response || typeof response !== "object" || !response.encryptedKey) {
+        if (
+          !response ||
+          typeof response !== "object" ||
+          !response.encryptedKey
+        ) {
           return response;
         }
         return decryptedData(response);
@@ -39,17 +43,19 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
           params,
         };
       },
-    transformResponse: async (response: any) => {
-     
-        if (!response || typeof response !== "object" || !response.encryptedKey) {
+      transformResponse: async (response: any) => {
+        if (
+          !response ||
+          typeof response !== "object" ||
+          !response.encryptedKey
+        ) {
           return response;
         }
-     
+
         return decryptedData(response);
       },
     }),
     uploadFiles: builder.mutation({
-      
       query: (credentials) => ({
         url: "/file/upload",
         method: "POST",
@@ -89,6 +95,30 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
       }),
       transformResponse: (response: any) => response,
     }),
+    onShareLink: builder.mutation({
+      query: (credentials) => ({
+        url: "/share/shareLink",
+        method: "POST",
+        body: credentials,
+      }),
+      transformResponse: (response: any) => response,
+    }),
+    onSearchUser: builder.mutation({
+      query: async ({ search }) => ({
+        url: `/user/user-list?search=${search}`,
+        method: "GET",
+      }),
+      transformResponse: async (response: any) => {
+        if (
+          !response ||
+          typeof response !== "object" ||
+          !response.encryptedKey
+        ) {
+          return response;
+        }
+        return  decryptedData(response);
+      },
+    }),
   }),
   overrideExisting: false,
 });
@@ -101,4 +131,6 @@ export const {
   useOnDeleteFileMutation,
   useOnRestoreFileMutation,
   useOnFaviroteFileMutation,
+  useOnSearchUserMutation,
+  useOnShareLinkMutation,
 } = extendedAuthApi;

@@ -42,7 +42,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   const { folderId, folderName, folderPath } = folder ?? {};
 
   const navigate = useNavigate();
-  const { currentView, searchQuery, addFile, shareFile } = useFileContext();
+  const { currentView, searchQuery, addFile } = useFileContext();
 
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
@@ -429,13 +429,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     setMenuAnchor(null);
   };
 
-  const handleShareSubmit = (emails: string[]) => {
-    if (selectedFile) {
-      shareFile(selectedFile.id, emails);
-      setShareDialogOpen(false);
-      setSelectedFile(null);
-    }
-  };
+
 
   const handleMenuClick = (event: any, file: any) => {
     setMenuAnchor(event.currentTarget);
@@ -555,9 +549,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
         open={shareDialogOpen}
         onClose={() => {
           setShareDialogOpen(false);
-          setSelectedFile(null);
         }}
-        onShare={handleShareSubmit}
         file={selectedFile}
       />
 

@@ -222,3 +222,14 @@ export async function encryptPayload(payload:any, ) {
     data: bytesToBase64(cipherText),
   };
 }
+
+export function debounce<T extends (...args: unknown[]) => unknown>(
+  fn: any,
+  delay: number
+): (...args: Parameters<T>) => void {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delay);
+  };
+}
