@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, } from "react";
 import {
   TableRow,
   TableCell,
@@ -18,6 +18,7 @@ import { FileItem } from "../../types";
 import FileIcon from "./FileIcon";
 import { formatFileSize } from "../../utils";
 import { useSelector } from "react-redux";
+import { useToast } from "../../hooks/useToast";
 
 interface FileItemRowProps {
   file: FileItem;
@@ -36,12 +37,19 @@ const FileItemRow: FC<FileItemRowProps> = ({
   isSharedWithMe = false,
   onClickFolder,
 }) => {
-  const [isHover, setIsHover] = useState(false);
+const { showToast } =  useToast()
   const { isViewing, viewingFileId, isRestoring, restoringFileId, isDownloading, downloadingFileId } =
     useSelector((state: any) => state.loadingState);
   const isFileViewing = isViewing && viewingFileId === file?.unique_key;
   const isFileRestoring = isRestoring && restoringFileId === file?.unique_key;
   const isFileDownloading = isDownloading && downloadingFileId === file?.unique_key;
+
+    useEffect(() => {
+    if(isFileDownloading ){
+      showToast("Please wait...", "success", isFileDownloading);
+      
+    }
+    }, [isFileDownloading]);
 
   const handleDoubleClick = () => {
     if (file.type === "folder" && onClickFolder) {
@@ -67,8 +75,7 @@ const FileItemRow: FC<FileItemRowProps> = ({
       <TableRow
         key={file.unique_key}
         onDoubleClick={handleDoubleClick}
-        onMouseEnter={() => setIsHover(true)}
-        onMouseLeave={() => setIsHover(false)}
+   
         sx={{
           "&:hover": {
             backgroundColor: "rgba(0, 0, 0, 0.02)",
@@ -147,7 +154,7 @@ const FileItemRow: FC<FileItemRowProps> = ({
         </TableCell>
         <TableCell align="right">
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            {isHover && file.type === "file" && (
+            {file.type === "file" && (
               <>
                 {onDownload && (
                   <IconButton
@@ -209,8 +216,7 @@ const FileItemRow: FC<FileItemRowProps> = ({
     <TableRow
       key={file.id}
       onDoubleClick={handleDoubleClick}
-      onMouseEnter={() => setIsHover(true)}
-      onMouseLeave={() => setIsHover(false)}
+   
       sx={{
         "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.02)" },
         cursor: "pointer",
@@ -256,7 +262,7 @@ const FileItemRow: FC<FileItemRowProps> = ({
       </TableCell>
       <TableCell align="right">
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-          {isHover && file.type === "file" && (
+          {file.type === "file" && (
             <>
               {onDownload && (
                 <IconButton

@@ -30,7 +30,7 @@ const RightDrawer: FC<RightDrawerProps> = ({
       onClose={onClose}
       PaperProps={{
         sx: {
-          width: width,
+          width: { xs: "100%", sm: width },
           boxShadow: "-2px 0 8px rgba(0, 0, 0, 0.1)",
         },
       }}

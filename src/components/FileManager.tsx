@@ -34,6 +34,8 @@ import { useDispatch, useSelector } from "react-redux";
 
 interface FileManagerProps {
   folder?: {};
+  linkData?: any
+  
 }
 
 const FileManager: FC<FileManagerProps> = ({ folder }) => {
@@ -57,15 +59,21 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     useCreateFolderMutation();
   const [uploadFiles, { isLoading: isUploading }] = useUploadFilesMutation();
 
+
+
+
+
+
+
   useEffect(() => {
     if (!isUploading) {
       return;
     }
-    showToast("Working please wait ....");
+    showToast("Working please wait ....","success", isUploading);
   }, [isUploading]);
 
   const queryArgs = useMemo(() => {
-    const args: { folderId?: string; isTrash?: number; currentView: string } = {
+    const args: { folderId?: string; isTrash?: number; currentView: string , isShared?: number} = {
       currentView,
     };
 
@@ -74,6 +82,9 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     }
     if (currentView === "trash") {
       args.isTrash = 1;
+    }
+      if (currentView === "sharedWithMe" ) {
+      args.isShared = 1;
     }
 
     return args;
@@ -90,6 +101,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     data,
     refetch,
     isLoading,
+    isFetching
   } = useFetchFilesQuery(queryArgs, {
     refetchOnMountOrArgChange: true,
   });
@@ -99,6 +111,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   useEffect(() => {
     setDriveData([]);
   }, [folderId, currentView]);
+
   const [onDeleteFile] = useOnDeleteFileMutation();
   const [onRestoreFile] = useOnRestoreFileMutation();
   const [onFaviroteFile] = useOnFaviroteFileMutation();
@@ -228,13 +241,14 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     if (isFetchingFiles) {
       return; 
     }
-    if (data?.data) {
-      const files = Array.isArray(data.data) ? data.data : [];
+    if (data?.data ) {
+     
+      const files = Array.isArray(data.data ) ? data.data : [];
       setDriveData(files);
     } else if (data !== undefined) {
       setDriveData([]);
     }
-  }, [data, isFetchingFiles, folderId]);
+  }, [data, isFetchingFiles, folderId, ]);
 
 
   useEffect(() => {
@@ -337,7 +351,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       case "sharedDrives":
         return !file.trash && file.sharedWith && file.sharedWith.length > 0;
       case "sharedWithMe":
-        return !file.trash && file.ownerId && file.ownerId !== "current-user";
+        return file;
       case "starred":
         return file.favorite && !file.trash;
       case "trash":
@@ -451,7 +465,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
         folder={folderName}
         onBack={handleBack}
         onRefresh={refetch}
-        isRefreshing={isFetchingFiles}
+        isRefreshing={isFetchingFiles || isFetching}
       />
 
       <Box sx={{ p: 3 }}>

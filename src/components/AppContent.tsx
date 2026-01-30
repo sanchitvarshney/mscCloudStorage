@@ -25,7 +25,7 @@ import DomainSettings from "./DomainSettings";
 import { useGetProfileQuery } from "../services/auth";
 import { setSpace } from "../slices/loadingSlice";
 
-const DEFAULT_STORAGE_BYTES = 15 * 1024 * 1024 * 1024; // 15 GB
+const DEFAULT_STORAGE_BYTES = 15 * 1024 * 1024 * 1024; 
 
 const AppContent: React.FC = () => {
   const dispatch = useDispatch();

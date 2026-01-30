@@ -30,7 +30,7 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
       },
     }),
     fetchFiles: builder.query({
-      query: ({ folderId, isTrash }) => {
+      query: ({ folderId, isTrash, isShared }) => {
         const params: any = {};
 
         if (folderId) {
@@ -38,7 +38,7 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
         }
 
         return {
-          url: isTrash ? "/folder/trash" : "/folder/list",
+          url: isTrash ? "/folder/trash" : isShared  ? "/share/shared" :   "/folder/list",
           method: "GET",
           params,
         };
@@ -116,14 +116,15 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
         ) {
           return response;
         }
-        return  decryptedData(response);
+        return decryptedData(response);
       },
     }),
     fetchSharedFileInfo: builder.query({
-      query: ({ share_key }) => ({
-        url: `/share/validate/${share_key}`,
+      query: async ({ share_key }) => ({
+        url: `/share/share/validate?key=${share_key}`,
         method: "GET",
       }),
+    
       transformResponse: async (response: any) => {
         if (
           !response ||
@@ -135,6 +136,7 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
         return decryptedData(response);
       },
     }),
+ 
   }),
   overrideExisting: false,
 });

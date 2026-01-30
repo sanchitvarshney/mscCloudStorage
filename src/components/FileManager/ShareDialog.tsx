@@ -65,6 +65,8 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
   const [expiresAt, setExpiresAt] = useState<string>("");
   const [fieldError, setFieldError] = useState<string>("");
 
+
+
   const [
     triggerSearchUser,
     { data: searchUserData, isLoading: isSearchingUsers },
@@ -74,6 +76,9 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
     triggerShareLink,
     { data: shareLinkData, isLoading: isCreatingShareLink },
   ] = useOnShareLinkMutation();
+
+
+ 
 
   const debouncedSearch = useMemo(
     () =>
@@ -182,7 +187,7 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
       file_key: file?.type === "file" ? file?.unique_key : "",
       folder_key: file?.type === "folder" ? file?.unique_key : "",
       restrict: generalAccess === "anyone" ? "N" : "Y",
-      shared_with_user_ids: sharedIds,
+      shared_with_user_id: sharedIds,
       ...(expiresAt && {
         expires_at: moment(expiresAt).format("DD/MM/YYYY hh:mm:ss A"),
       }),

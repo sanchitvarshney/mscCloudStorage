@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -13,6 +13,7 @@ import FileIcon from "./FileIcon";
 import { formatFileSize } from "../../utils";
 import { useSelector } from "react-redux";
 import { useFileContext } from "../../context/FileContext";
+import { useToast } from "../../hooks/useToast";
 
 interface FileItemCardProps {
   file: FileItem;
@@ -29,6 +30,7 @@ const FileItemCard: FC<FileItemCardProps> = ({
   onView,
   onClickFolder,
 }) => {
+ const { showToast } = useToast();
   const [isHover, setIsHover] = useState(false);
  const {currentView} = useFileContext();
   const { isViewing, viewingFileId, isRestoring, restoringFileId, isDownloading, downloadingFileId } =
@@ -36,6 +38,14 @@ const FileItemCard: FC<FileItemCardProps> = ({
   const isFileViewing = isViewing && viewingFileId === file?.unique_key;
   const isFileRestoring = isRestoring && restoringFileId === file?.unique_key;
   const isFileDownloading = isDownloading && downloadingFileId === file?.unique_key;
+
+  useEffect(() => {
+  if(isDownloading ){
+    showToast("Please wait...", "success", isDownloading);
+    
+  }
+  }, [isDownloading]);
+  
 
   const handleDownload = (e: React.MouseEvent, file: FileItem) => {
     e.stopPropagation();
