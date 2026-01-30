@@ -11,6 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import SearchBar from "./reuseable/SearchBar";
 import RightDrawer from "./reuseable/RightDrawer";
@@ -22,8 +23,12 @@ import Profile from "./Profile";
 import { useAuth } from "../hooks/AuthHook";
 import DomainSettings from "./DomainSettings";
 import { useGetProfileQuery } from "../services/auth";
+import { setSpace } from "../slices/loadingSlice";
+
+const DEFAULT_STORAGE_BYTES = 15 * 1024 * 1024 * 1024; // 15 GB
 
 const AppContent: React.FC = () => {
+  const dispatch = useDispatch();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,6 +49,22 @@ const AppContent: React.FC = () => {
       navigate("/offline");
     }
   }, [isOnline, location.pathname, navigate]);
+
+  useEffect(() => {
+    if (profileData) {
+      const data = profileData?.userData ?? profileData;
+      const usedSpace = Number(data?.spaceOccupied) || 0;
+      const totalSpace =
+        Number(data?.storageTotal) || DEFAULT_STORAGE_BYTES;
+      const freeSpace = totalSpace - usedSpace;
+      dispatch(
+        setSpace({
+          totalSpace,
+          freeSpace,
+        })
+      );
+    }
+  }, [profileData, dispatch]);
 
   const handleProfileClick = (event: React.MouseEvent<HTMLElement>) => {
     setProfileMenuAnchor(event.currentTarget);

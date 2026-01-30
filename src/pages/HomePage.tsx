@@ -3,12 +3,17 @@ import { useLocation, useParams } from "react-router-dom";
 import FileManager from "../components/FileManager";
 import { useFileContext } from "../context/FileContext";
 import { getViewFromRoute } from "../utils/routeMapping";
+import { useFetchSharedFileInfoQuery } from "../services/dirManager/dirServices";
 
 const HomePage: FC = () => {
+  const { fileId } = useParams<{ fileId: string }>();
   const location = useLocation();
   const { setCurrentView } = useFileContext();
   const { folderId } = useParams<{ folderId: string }>();
   const { folderName, folderPath } = useLocation()?.state || {};
+
+ const { data } = useFetchSharedFileInfoQuery({ fileId }, { skip: !fileId });
+ console.log(data)
 
   useEffect(() => {
     const route = location.pathname.split("/").filter(Boolean)[0] || "home";

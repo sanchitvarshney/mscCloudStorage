@@ -12,6 +12,8 @@ interface LoadingState {
   restoringFileId: string | null;
   viewingFileId: string | null;
   downloadingFileId: string | null;
+  totalSpace: number;
+  freeSpace: number;
 }
 
 const initialState: LoadingState = {
@@ -26,6 +28,9 @@ const initialState: LoadingState = {
   restoringFileId: null,
   viewingFileId: null,
   downloadingFileId: null,
+  totalSpace: 0,
+  freeSpace: 0,
+
 };
 
 const loadingSlice = createSlice({
@@ -70,6 +75,13 @@ const loadingSlice = createSlice({
       state.isDownloading = action.payload.loading;
       state.downloadingFileId = action.payload.fileId || null;
     },
+      setSpace: (
+      state,
+      action: PayloadAction<{ totalSpace: number; freeSpace: number  }>,
+    ) => {
+      state.totalSpace = action.payload.totalSpace;
+      state.freeSpace = action.payload.freeSpace ;
+    },
     resetLoading: (state) => {
       state.isDeleting = false;
       state.isFavoriting = false;
@@ -94,5 +106,6 @@ export const {
   setViewing,
   setDownloading,
   resetLoading,
+  setSpace
 } = loadingSlice.actions;
 export default loadingSlice.reducer;

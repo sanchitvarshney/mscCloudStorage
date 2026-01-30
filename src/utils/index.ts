@@ -23,14 +23,23 @@ export const formatDate = (date: Date) => {
   });
 };
 
-export const formatFileSize = (bytes?: number) => {
-  if (!bytes) return "";
-  if (bytes < 1024) return bytes + " B";
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + " KB";
-  if (bytes < 1024 * 1024 * 1024)
-    return (bytes / (1024 * 1024)).toFixed(2) + " MB";
-  return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB";
-};
+// export const formatFileSize = (bytes?: number) => {
+//   if (!bytes) return "";
+//   if (bytes < 1024) return bytes + " B";
+//   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + " KB";
+//   if (bytes < 1024 * 1024 * 1024)
+//     return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+//   return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB";
+// };
+
+export function formatFileSize(bytes: number | string | undefined): string {
+  const n = Number(bytes);
+  if (!Number.isFinite(n) || n < 0) return "0 B";
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(2)} KB`;
+  if (n < 1024 * 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(2)} MB`;
+  return `${(n / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+}
 
 export const getViewTitle = (currentView: string) => {
   switch (currentView) {

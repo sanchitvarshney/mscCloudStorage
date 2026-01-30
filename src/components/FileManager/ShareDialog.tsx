@@ -143,6 +143,13 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
     }
   }, [shareLinkData]);
 
+  const handleCloseModal = () => {
+    onClose();
+    setSearchQuery("");
+    setGeneralAccess("restricted");
+    setPeopleWithAccess([]);
+  };
+
   const handleAddPerson = (email: any, name?: string, key?: string) => {
     if (!peopleWithAccess.find((p) => p.email === email)) {
       setPeopleWithAccess([...peopleWithAccess, { email, name, key }]);
@@ -258,7 +265,7 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
         </Typography>
         <IconButton
           size="small"
-          onClick={onClose}
+          onClick={handleCloseModal}
           sx={{
             color: "#5f6368",
             "&:hover": {
@@ -644,7 +651,7 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
       <DialogActions
         sx={{ px: 3, py: 2, borderTop: "1px solid rgba(0, 0, 0, 0.12)" }}
       >
-        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={handleCloseModal}>Cancel</Button>
         <Button
           onClick={handleShare}
           variant="contained"

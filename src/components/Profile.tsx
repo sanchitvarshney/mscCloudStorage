@@ -24,19 +24,14 @@ import {
   // DarkMode,
   CheckCircle,
 } from "@mui/icons-material";
+import { formatFileSize } from "../utils";
+import { useDispatch } from "react-redux";
+import { setSpace } from "../slices/loadingSlice";
 
-const DEFAULT_STORAGE_BYTES = 5 * 1024 * 1024 * 1024; // 5 GB
-
-function formatBytes(bytes: number | string | undefined): string {
-  const n = Number(bytes);
-  if (!Number.isFinite(n) || n < 0) return "0 B";
-  if (n < 1024) return `${n} B`;
-  if (n < 1024 * 1024) return `${(n / 1024).toFixed(2)} KB`;
-  if (n < 1024 * 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(2)} MB`;
-  return `${(n / (1024 * 1024 * 1024)).toFixed(2)} GB`;
-}
+const DEFAULT_STORAGE_BYTES = 15 * 1024 * 1024 * 1024; // 15 GB
 
 const Profile: FC = ({ userData }: any) => {
+  const dispatch = useDispatch();
   const rawData = userData?.userData ?? userData ?? {};
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState(rawData);
@@ -46,22 +41,37 @@ const Profile: FC = ({ userData }: any) => {
     setProfileData(data);
   }, [userData]);
 
+  const spaceOccupiedBytes = Number(profileData?.spaceOccupied) || 0;
+  const storageTotalBytes =
+    Number(profileData?.storageTotal) || DEFAULT_STORAGE_BYTES;
+
+  useEffect(() => {
+    if (profileData) {
+      const usedSpace = Number(profileData.spaceOccupied) || 0;
+      const totalSpace =
+        Number(profileData.storageTotal) || DEFAULT_STORAGE_BYTES;
+      const freeSpace = totalSpace - usedSpace;
+      dispatch(
+        setSpace({
+          totalSpace,
+          freeSpace,
+        })
+      );
+    }
+  }, [profileData, dispatch]);
+
   const handleEdit = () => {
     setIsEditing(!isEditing);
   };
 
   const handleSave = () => {
     setIsEditing(false);
-    // Here you would save the data to backend
   };
 
   const handleChange = (field: string, value: string) => {
     setProfileData((prev: any) => ({ ...prev, [field]: value }));
   };
 
-  const spaceOccupiedBytes = Number(profileData.spaceOccupied) || 0;
-  const storageTotalBytes =
-    Number(profileData.storageTotal) || DEFAULT_STORAGE_BYTES;
   const storagePercentage =
     storageTotalBytes > 0
       ? Math.min(100, (spaceOccupiedBytes / storageTotalBytes) * 100)
@@ -70,7 +80,6 @@ const Profile: FC = ({ userData }: any) => {
     profileData.phone && profileData.phone !== "--"
       ? profileData.phone
       : "Not provided";
-
 
   return (
     <Box sx={{ p: 3 }}>
@@ -105,7 +114,10 @@ const Profile: FC = ({ userData }: any) => {
                 sx={{ mb: 2 }}
               />
             ) : (
-              <Typography variant="h4" sx={{ fontWeight: 500, color: "#202124", mb: 0.5 }}>
+              <Typography
+                variant="h4"
+                sx={{ fontWeight: 500, color: "#202124", mb: 0.5 }}
+              >
                 {profileData.name}
               </Typography>
             )}
@@ -115,7 +127,6 @@ const Profile: FC = ({ userData }: any) => {
                 Verified Account
               </Typography>
             </Box>
-           
           </Box>
           <Button
             variant={isEditing ? "contained" : "outlined"}
@@ -152,11 +163,15 @@ const Profile: FC = ({ userData }: any) => {
         }}
       >
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 500, color: "#202124" }}>
+          <Typography
+            variant="subtitle1"
+            sx={{ fontWeight: 500, color: "#202124" }}
+          >
             Storage
           </Typography>
           <Typography variant="body2" sx={{ color: "#5f6368" }}>
-            {formatBytes(spaceOccupiedBytes)} of {formatBytes(storageTotalBytes)} used
+            {formatFileSize(spaceOccupiedBytes)} of{" "}
+            {formatFileSize(storageTotalBytes)} used
           </Typography>
         </Box>
         <Box
@@ -177,15 +192,20 @@ const Profile: FC = ({ userData }: any) => {
             }}
           />
         </Box>
-        <Typography variant="caption" sx={{ color: "#5f6368", mt: 1, display: "block" }}>
+        <Typography
+          variant="caption"
+          sx={{ color: "#5f6368", mt: 1, display: "block" }}
+        >
           {storagePercentage.toFixed(1)}% used
         </Typography>
       </Paper>
 
-
       {/* Contact Information */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h6" sx={{ fontWeight: 500, color: "#202124", mb: 2 }}>
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: 500, color: "#202124", mb: 2 }}
+        >
           Contact Information
         </Typography>
         <Paper
@@ -203,18 +223,20 @@ const Profile: FC = ({ userData }: any) => {
               </ListItemIcon>
               <ListItemText
                 primary="Email"
-                secondary={isEditing ? (
-                  <TextField
-                    value={profileData.email}
-                    onChange={(e) => handleChange("email", e.target.value)}
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    type="email"
-                  />
-                ) : (
-                  profileData.email
-                )}
+                secondary={
+                  isEditing ? (
+                    <TextField
+                      value={profileData.email}
+                      onChange={(e) => handleChange("email", e.target.value)}
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      type="email"
+                    />
+                  ) : (
+                    profileData.email
+                  )
+                }
                 secondaryTypographyProps={{
                   sx: { color: "#202124", mt: 0.5 },
                 }}
@@ -227,25 +249,28 @@ const Profile: FC = ({ userData }: any) => {
               </ListItemIcon>
               <ListItemText
                 primary="Phone"
-                secondary={isEditing ? (
-                  <TextField
-                    value={profileData.phone === "--" ? "" : profileData.phone}
-                    onChange={(e) => handleChange("phone", e.target.value)}
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    type="tel"
-                    placeholder="Not provided"
-                  />
-                ) : (
-                  displayPhone
-                )}
+                secondary={
+                  isEditing ? (
+                    <TextField
+                      value={
+                        profileData.phone === "--" ? "" : profileData.phone
+                      }
+                      onChange={(e) => handleChange("phone", e.target.value)}
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      type="tel"
+                      placeholder="Not provided"
+                    />
+                  ) : (
+                    displayPhone
+                  )
+                }
                 secondaryTypographyProps={{
                   sx: { color: "#202124", mt: 0.5 },
                 }}
               />
             </ListItem>
-         
           </List>
         </Paper>
       </Box>

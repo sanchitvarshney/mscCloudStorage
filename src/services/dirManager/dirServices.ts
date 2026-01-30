@@ -119,6 +119,22 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
         return  decryptedData(response);
       },
     }),
+    fetchSharedFileInfo: builder.query({
+      query: ({ share_key }) => ({
+        url: `/share/validate/${share_key}`,
+        method: "GET",
+      }),
+      transformResponse: async (response: any) => {
+        if (
+          !response ||
+          typeof response !== "object" ||
+          !response.encryptedKey
+        ) {
+          return response;
+        }
+        return decryptedData(response);
+      },
+    }),
   }),
   overrideExisting: false,
 });
@@ -133,4 +149,5 @@ export const {
   useOnFaviroteFileMutation,
   useOnSearchUserMutation,
   useOnShareLinkMutation,
+  useFetchSharedFileInfoQuery,
 } = extendedAuthApi;
