@@ -72,7 +72,7 @@ export const groupFilesByDate = (files: any[]) => {
   files.forEach((file) => {
     const date = file.dateShared || file.modified;
     const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffTime = Math.abs(now.getTime() - date?.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays === 1) {

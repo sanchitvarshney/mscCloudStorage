@@ -1,4 +1,4 @@
-import { decryptedData } from "../utils";
+import { decryptedData, encryptPayload } from "../utils";
 import { baseApiInstance } from "./apiInstance";
 
 const extendedAuthApi = baseApiInstance.injectEndpoints({
@@ -37,8 +37,38 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
         return decryptedData(response);
       },
     }),
+    updateProfile: builder.mutation({
+      query: async (credentials) => {
+        try {
+          const encrypt = await encryptPayload(credentials);
+
+          return {
+            url: "/user/update-user",
+            method: "PUT",
+            body: encrypt,
+          };
+        } catch (err) {
+          console.error("Encryption failed:", err);
+          throw err;
+        }
+      },
+      transformResponse: async (response: any) => {
+        if (
+          !response ||
+          typeof response !== "object" ||
+          !response.encryptedKey
+        ) {
+          return response;
+        }
+        return decryptedData(response);
+      },
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useLoginGoogleMutation, useGetProfileQuery } = extendedAuthApi;
+export const {
+  useLoginGoogleMutation,
+  useGetProfileQuery,
+  useUpdateProfileMutation,
+} = extendedAuthApi;

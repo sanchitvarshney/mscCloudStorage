@@ -8,19 +8,18 @@ import {
   Chip,
 } from "@mui/material";
 import { Search, Close } from "@mui/icons-material";
-import SearchDropdown from "./SearchDropdown";
 
 const SearchBar: React.FC = () => {
-  const { searchQuery, setSearchQuery, files } = useFileContext();
+  const { searchQuery, setSearchQuery } = useFileContext();
   const [isFocused, setIsFocused] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
   const searchBarRef = useRef<HTMLDivElement>(null);
-  const [showDropdown, setShowDropdown] = useState(false);
+  // const [showDropdown, setShowDropdown] = useState(false);
 
 
-  useEffect(() => {
-    setShowDropdown(isFocused && (searchQuery.length > 0 || selectedPerson !== null));
-  }, [isFocused, searchQuery, selectedPerson]);
+  // useEffect(() => {
+  //   setShowDropdown(isFocused && (searchQuery.length > 0 || selectedPerson !== null));
+  // }, [isFocused, searchQuery, selectedPerson]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -42,19 +41,9 @@ const SearchBar: React.FC = () => {
     };
   }, [isFocused]);
 
-  const handlePersonFilter = (person: string | null) => {
-    setSelectedPerson(person);
-    if (person) {
-      setShowDropdown(true);
-    } else {
-      setSearchQuery("");
-    }
-  };
 
-  const handleFileClick = () => {
-    // Optionally close dropdown or navigate to file
-    // setIsFocused(false);
-  };
+
+
 
   return (
     <Box
@@ -62,7 +51,7 @@ const SearchBar: React.FC = () => {
       sx={{
         position: "relative",
         width: "100%",
-        maxWidth: 720,
+        maxWidth: { xs: "100%", sm: "600px" },
       }}
     >
       <Paper
@@ -84,7 +73,8 @@ const SearchBar: React.FC = () => {
             ? "0 2px 5px 1px rgba(64,60,67,.16)"
             : "none",
           border: isFocused ? "1px solid transparent" : "1px solid transparent",
-          borderRadius: showDropdown ? "24px 24px 0 0" : "24px",
+          // borderRadius: showDropdown ? "24px 24px 0 0" : "24px",
+            borderRadius:"24px",
           transition: "all 0.2s ease-in-out",
           "&:hover": {
             backgroundColor: isFocused ? "#fff" : "#e8eaed",
@@ -169,7 +159,7 @@ const SearchBar: React.FC = () => {
         )}
       
       </Paper>
-      {showDropdown && (
+      {/* {showDropdown && (
         <SearchDropdown
           searchQuery={searchQuery}
           files={files}
@@ -177,7 +167,7 @@ const SearchBar: React.FC = () => {
           onPersonFilter={handlePersonFilter}
           onFileClick={handleFileClick}
         />
-      )}
+      )} */}
     </Box>
   );
 };

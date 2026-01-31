@@ -138,12 +138,13 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
 
   useEffect(() => {
     if (
-      shareLinkData &&
-      typeof shareLinkData === "object" &&
-      "link" in shareLinkData
+      shareLinkData?.data &&
+      typeof shareLinkData?.data === "object" &&
+      "link" in shareLinkData?.data
     ) {
-      setShareLinkUrl((shareLinkData as { link?: string }).link ?? null);
+      setShareLinkUrl(shareLinkData?.data?.link ?? null);
     } else if (typeof shareLinkData === "string") {
+
       setShareLinkUrl(shareLinkData);
     }
   }, [shareLinkData]);

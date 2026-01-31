@@ -1,19 +1,17 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import { FileItem, StorageInfo, ViewType } from "../types";
+import { FileItem, ViewType } from "../types";
 
 interface FileContextType {
   files: FileItem[];
   currentView: ViewType;
-  storageInfo: StorageInfo;
   searchQuery: string;
   setCurrentView: (view: ViewType) => void;
   setSearchQuery: (query: string) => void;
-  addFile: (file: FileItem) => void;
+  addFile: any;
   addFolder: (name: string) => void;
   shareFile: (id: string, userIds: string[]) => void;
   toggleFavourite: (id: string) => void;
   restoreFile: (id: string) => void;
-  updateStorage: (used: number) => void;
 }
 
 const FileContext = createContext<FileContextType | undefined>(undefined);
@@ -23,19 +21,15 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
 
 
-  const [files, setFiles] = useState<FileItem[]>([]);
+  const [files, setFiles] = useState<any[]>([]);
   const [currentView, setCurrentView] = useState<ViewType>("home");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [storageInfo, setStorageInfo] = useState<StorageInfo>({
-    used: 0,
-    total: 15,
-    users: 0,
-  });
 
-  const addFile = (file: FileItem) => {
-    setFiles((prev) => [...prev, file]);
-    const sizeInGB = (file.size || 0) / (1024 * 1024 * 1024);
-    updateStorage(storageInfo.used + sizeInGB);
+
+  const addFile = (files: any[]) => {
+    
+    setFiles(files);
+  
   };
 
   const addFolder = (name: string) => {
@@ -59,7 +53,6 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({
         file.id === id ? { ...file, sharedWith: userIds } : file,
       ),
     );
-    setStorageInfo((prev) => ({ ...prev, users: userIds.length }));
   };
 
   const toggleFavourite = (id: string) => {
@@ -78,16 +71,13 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({
     );
   };
 
-  const updateStorage = (used: number) => {
-    setStorageInfo((prev) => ({ ...prev, used }));
-  };
+ 
 
   return (
     <FileContext.Provider
       value={{
         files,
         currentView,
-        storageInfo,
         searchQuery,
         setCurrentView,
         setSearchQuery,
@@ -96,7 +86,6 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({
         shareFile,
         toggleFavourite,
         restoreFile,
-        updateStorage,
       }}
     >
       {children}

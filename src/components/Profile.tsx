@@ -12,6 +12,7 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  CircularProgress,
 } from "@mui/material";
 import {
   Edit,
@@ -27,19 +28,28 @@ import {
 import { formatFileSize } from "../utils";
 import { useDispatch } from "react-redux";
 import { setSpace } from "../slices/loadingSlice";
+import { useUpdateProfileMutation } from "../services/auth";
+import { useToast } from "../hooks/useToast";
 
 const DEFAULT_STORAGE_BYTES = 15 * 1024 * 1024 * 1024; // 15 GB
 
-const Profile: FC = ({ userData }: any) => {
+const Profile: FC = ({ userData, onRefresh }: any) => {
   const dispatch = useDispatch();
   const rawData = userData?.userData ?? userData ?? {};
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState(rawData);
+ const [updateProfile, { isLoading }] = useUpdateProfileMutation();
+const { showToast } = useToast();
+
+
+
 
   useEffect(() => {
     const data = userData?.userData ?? userData ?? {};
     setProfileData(data);
   }, [userData]);
+
+
 
   const spaceOccupiedBytes = Number(profileData?.spaceOccupied) || 0;
   const storageTotalBytes =
@@ -65,7 +75,30 @@ const Profile: FC = ({ userData }: any) => {
   };
 
   const handleSave = () => {
-    setIsEditing(false);
+    const payload = {
+      name: profileData.name,
+      email: profileData.email,
+      phone: profileData.phone,
+    }
+    updateProfile(payload)
+      .unwrap()
+      .then((res: any) => {
+        if (res?.success) {
+          showToast(res?.message || "Profile updated successfully", "success");
+             setIsEditing(false);
+             onRefresh();
+        } else {
+          showToast(res?.message || "Failed to update profile", "error");
+             
+        }
+      })
+      .catch((err: any) => {
+        showToast(
+          err?.data?.message || err?.message || "Failed to update profile",
+          "error",
+        );
+      });
+ 
   };
 
   const handleChange = (field: string, value: string) => {
@@ -130,8 +163,9 @@ const Profile: FC = ({ userData }: any) => {
           </Box>
           <Button
             variant={isEditing ? "contained" : "outlined"}
-            startIcon={<Edit />}
+            startIcon={ isLoading ? <CircularProgress size={16} /> : <Edit />}
             onClick={isEditing ? handleSave : handleEdit}
+            disabled={isLoading}
             sx={{
               textTransform: "none",
               ...(isEditing

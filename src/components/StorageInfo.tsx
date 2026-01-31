@@ -28,6 +28,7 @@ const StorageInfo: React.FC = () => {
         px: 4,
         backgroundColor: 'rgba(0, 0, 0, 0.02)',
         borderRadius: 2,
+       
       }}
     >
       <Box sx={{ mb: 1 }}>

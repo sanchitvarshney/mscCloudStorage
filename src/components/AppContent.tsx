@@ -25,7 +25,7 @@ import DomainSettings from "./DomainSettings";
 import { useGetProfileQuery } from "../services/auth";
 import { setSpace } from "../slices/loadingSlice";
 
-const DEFAULT_STORAGE_BYTES = 15 * 1024 * 1024 * 1024; 
+const DEFAULT_STORAGE_BYTES = 15 * 1024 * 1024 * 1024;
 
 const AppContent: React.FC = () => {
   const dispatch = useDispatch();
@@ -42,7 +42,7 @@ const AppContent: React.FC = () => {
   const [domainSettingsDrawerOpen, setDomainSettingsDrawerOpen] =
     useState(false);
   const { isOnline } = useConnectivity();
-  const { data: profileData } = useGetProfileQuery({});
+  const { data: profileData, refetch } = useGetProfileQuery({});
 
   useEffect(() => {
     if (!isOnline && location.pathname !== "/offline") {
@@ -54,14 +54,13 @@ const AppContent: React.FC = () => {
     if (profileData) {
       const data = profileData?.userData ?? profileData;
       const usedSpace = Number(data?.spaceOccupied) || 0;
-      const totalSpace =
-        Number(data?.storageTotal) || DEFAULT_STORAGE_BYTES;
+      const totalSpace = Number(data?.storageTotal) || DEFAULT_STORAGE_BYTES;
       const freeSpace = totalSpace - usedSpace;
       dispatch(
         setSpace({
           totalSpace,
           freeSpace,
-        })
+        }),
       );
     }
   }, [profileData, dispatch]);
@@ -410,7 +409,7 @@ const AppContent: React.FC = () => {
         width={600}
       >
         {/* @ts-ignore */}
-        <Profile userData={profileData} />
+        <Profile userData={profileData} onRefresh={refetch} />
       </RightDrawer>
 
       {/* Domain Settings Drawer */}

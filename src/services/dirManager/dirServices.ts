@@ -101,7 +101,16 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
         method: "POST",
         body: credentials,
       }),
-      transformResponse: (response: any) => response,
+         transformResponse: async (response: any) => {
+        if (
+          !response ||
+          typeof response !== "object" ||
+          !response.encryptedKey
+        ) {
+          return response;
+        }
+        return decryptedData(response);
+      },
     }),
     onSearchUser: builder.mutation({
       query: async ({ search }) => ({

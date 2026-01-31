@@ -72,10 +72,10 @@ const Sidebar: React.FC = () => {
     <Drawer
       variant="permanent"
       sx={{
-        width: drawerWidth,
+        width: {xs: 100 ,sm: drawerWidth },
         flexShrink: 0,
         "& .MuiDrawer-paper": {
-          width: drawerWidth,
+          width: {xs: 100 ,sm: drawerWidth },
           borderRight: "none",
           // boxSizing: 'border-box',
           // borderRight: '1px solid rgba(0, 0, 0, 0.12)',

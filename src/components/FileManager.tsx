@@ -44,7 +44,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   const { folderId, folderName, folderPath } = folder ?? {};
 
   const navigate = useNavigate();
-  const { currentView, searchQuery, addFile } = useFileContext();
+  const { currentView, searchQuery, addFile , files} = useFileContext();
 
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
@@ -52,7 +52,6 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   const [fileToDelete, setFileToDelete] = useState<any | null>(null);
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
-  const [driveData, setDriveData] = useState<any[]>([]);
   const dispatch = useDispatch();
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
   const [createFolder, { isLoading: isFolderCreating }] =
@@ -109,7 +108,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   const isFetchingFiles = isLoading ;
 
   useEffect(() => {
-    setDriveData([]);
+    addFile([]);
   }, [folderId, currentView]);
 
   const [onDeleteFile] = useOnDeleteFileMutation();
@@ -224,7 +223,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
 
   const handleClickFolder = (folder: any) => {
     localStorage.setItem("folderPath", folder.path);
-    setDriveData([]);
+    addFile([]);
     const baseRoute = getRouteFromView(currentView);
     navigate(`/${baseRoute}/${folder.unique_key}`, {
       state: { folderName: folder.name, folderPath: folder.path },
@@ -232,7 +231,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   };
 
   const handleBack = () => {
-    setDriveData([]);
+    addFile([]);
     const baseRoute = getRouteFromView(currentView);
     navigate(`/${baseRoute}`, { replace: true, state: null });
   };
@@ -244,9 +243,9 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     if (data?.data ) {
      
       const files = Array.isArray(data.data ) ? data.data : [];
-      setDriveData(files);
+      addFile(files);
     } else if (data !== undefined) {
-      setDriveData([]);
+      addFile([]);
     }
   }, [data, isFetchingFiles, folderId, ]);
 
@@ -278,21 +277,16 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       }
     };
 
-    const handleFolderUpload = (event: CustomEvent) => {
-      const files = event.detail as FileList;
-      if (files) {
-        handleFolderUploadChange(files);
-      }
-    };
+
 
     window.addEventListener("createFolder" as any, handleCreateFolder);
     window.addEventListener("fileUpload" as any, handleFileUpload);
-    window.addEventListener("folderUpload" as any, handleFolderUpload);
+
 
     return () => {
       window.removeEventListener("createFolder" as any, handleCreateFolder);
       window.removeEventListener("fileUpload" as any, handleFileUpload);
-      window.removeEventListener("folderUpload" as any, handleFolderUpload);
+    
     };
   }, [folderId, folderName]);
 
@@ -315,26 +309,9 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       });
   };
 
-  const handleFolderUploadChange = (uploadedFiles: FileList) => {
-    Array.from(uploadedFiles).forEach((file) => {
-      const fileItem: FileItem = {
-        id: Date.now().toString() + Math.random(),
-        name: file.name,
-        type: "file",
-        size: file.size,
-        modifiedAt: "",
-        sharedWith: [],
-        isFavourite: false,
-        isTrashed: false,
-        isSpam: false,
-        ownerId: "current-user",
-        fileType: file.name.split(".").pop()?.toLowerCase(),
-      };
-      addFile(fileItem);
-    });
-  };
 
-  const filteredFiles = driveData?.filter((file: any) => {
+
+  const filteredFiles = files?.filter((file: any) => {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       if (!file.name.toLowerCase().includes(query)) {
