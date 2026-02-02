@@ -145,6 +145,28 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
         return decryptedData(response);
       },
     }),
+       onSearchFiles: builder.query({
+      query: ({ search }) => {
+  
+
+        return {
+          url: `/folder/search?search=${search}`,
+          method: "GET",
+       
+        };
+      },
+      transformResponse: async (response: any) => {
+        if (
+          !response ||
+          typeof response !== "object" ||
+          !response.encryptedKey
+        ) {
+          return response;
+        }
+
+        return decryptedData(response);
+      },
+    }),
  
   }),
   overrideExisting: false,
@@ -161,4 +183,5 @@ export const {
   useOnSearchUserMutation,
   useOnShareLinkMutation,
   useFetchSharedFileInfoQuery,
+  useLazyOnSearchFilesQuery
 } = extendedAuthApi;

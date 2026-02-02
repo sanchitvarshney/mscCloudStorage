@@ -1,5 +1,13 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import { FileItem, ViewType } from "../types";
+import { getViewFromRoute } from "../utils/routeMapping";
+
+function getInitialViewFromUrl(): ViewType {
+  if (typeof window === "undefined") return "home";
+  const path = window.location.pathname || "";
+  const route = path.split("/").filter(Boolean)[0] || "home";
+  return getViewFromRoute(route);
+}
 
 interface FileContextType {
   files: FileItem[];
@@ -19,11 +27,13 @@ const FileContext = createContext<FileContextType | undefined>(undefined);
 export const FileProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-
-
   const [files, setFiles] = useState<any[]>([]);
-  const [currentView, setCurrentView] = useState<ViewType>("home");
+  const [currentView, setCurrentView] = useState<ViewType>(getInitialViewFromUrl);
   const [searchQuery, setSearchQuery] = useState<string>("");
+
+
+ 
+  
 
 
   const addFile = (files: any[]) => {
@@ -31,6 +41,9 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({
     setFiles(files);
   
   };
+
+
+
 
   const addFolder = (name: string) => {
     const folder: FileItem = {

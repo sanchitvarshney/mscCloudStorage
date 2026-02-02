@@ -44,7 +44,8 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   const { folderId, folderName, folderPath } = folder ?? {};
 
   const navigate = useNavigate();
-  const { currentView, searchQuery, addFile, files } = useFileContext();
+  const { currentView,  addFile, files } = useFileContext();
+
 
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
@@ -77,6 +78,9 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
  
   }, [isUploading]);
 
+
+  
+
   const queryArgs = useCallback(async () => {
     const args: {
       folderId?: string;
@@ -85,7 +89,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       isShared?: number;
       type?: string;
     } = {
-      currentView,
+      currentView: currentView || "home",
     };
 
     if (folderId) {
@@ -355,12 +359,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   };
 
   const filteredFiles = files?.filter((file: any) => {
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      if (!file.name.toLowerCase().includes(query)) {
-        return false;
-      }
-    }
+  
 
     if (folderId || folderName) {
       return !file.trash;

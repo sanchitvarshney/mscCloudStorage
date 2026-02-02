@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useFileContext } from "../../context/FileContext";
 import {
   IconButton,
@@ -8,20 +8,41 @@ import {
   Chip,
 } from "@mui/material";
 import { Search, Close } from "@mui/icons-material";
+import { debounce } from "../../utils";
+import { useLazyOnSearchFilesQuery } from "../../services/dirManager/dirServices";
 
 const SearchBar: React.FC = () => {
-  const { searchQuery, setSearchQuery } = useFileContext();
+  const { searchQuery, setSearchQuery , addFile, currentView} = useFileContext();
   const [isFocused, setIsFocused] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
   const searchBarRef = useRef<HTMLDivElement>(null);
-  // const [showDropdown, setShowDropdown] = useState(false);
 
+  const [onSearchFiles] = useLazyOnSearchFilesQuery();
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((query: string) => {
+        if (!query.trim()) return;
+        if (currentView !== "home") return;
+        onSearchFiles({ search: query.trim() })
+          .unwrap()
+          .then((res: any) => {
+            const list = Array.isArray(res?.data) ? res.data : [];
+            addFile(list);
+          })
+          .catch(() => {
+            addFile([]);
+          });
+      }, 300),
+    [onSearchFiles, addFile, currentView],
+  );
 
-  // useEffect(() => {
-  //   setShowDropdown(isFocused && (searchQuery.length > 0 || selectedPerson !== null));
-  // }, [isFocused, searchQuery, selectedPerson]);
-
-  // Close dropdown when clicking outside
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchQuery(value);
+      debouncedSearch(value);
+    },
+    [debouncedSearch],
+  );
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -116,7 +137,7 @@ const SearchBar: React.FC = () => {
           }}
           placeholder="Search in Drive"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => handleSearchChange(e.target.value)}
           inputProps={{ "aria-label": "search in drive" }}
         />
         {selectedPerson && (
