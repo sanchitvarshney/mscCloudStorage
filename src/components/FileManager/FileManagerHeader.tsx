@@ -5,6 +5,8 @@ import { ViewType } from "../../types";
 import { getViewTitle } from "../../utils";
 import ViewToggle from "./ViewToggle";
 
+export type SharedWithMeTypeFilter = "all" | "folder" | "file";
+
 interface FileManagerHeaderProps {
   currentView: ViewType;
   viewMode: "list" | "grid";
@@ -13,6 +15,8 @@ interface FileManagerHeaderProps {
   onBack?: () => void;
   onRefresh?: () => void;
   isRefreshing?: boolean;
+  sharedWithMeTypeFilter?: SharedWithMeTypeFilter;
+  onSharedWithMeTypeFilterChange?: (value: SharedWithMeTypeFilter) => void;
 }
 
 const FileManagerHeader: FC<FileManagerHeaderProps> = ({
@@ -23,6 +27,8 @@ const FileManagerHeader: FC<FileManagerHeaderProps> = ({
   onBack,
   onRefresh,
   isRefreshing = false,
+  sharedWithMeTypeFilter = "all",
+  onSharedWithMeTypeFilterChange,
 }) => {
   const isFolderView = !!folder;
   return (
@@ -62,7 +68,12 @@ const FileManagerHeader: FC<FileManagerHeaderProps> = ({
         {currentView === "sharedWithMe" && (
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
             <FormControl size="small" sx={{ minWidth: 120 }}>
-              <Select value="all" sx={{ maxHeight: 40 }} displayEmpty>
+              <Select
+                value={sharedWithMeTypeFilter}
+                onChange={(e) => onSharedWithMeTypeFilterChange?.(e.target.value as SharedWithMeTypeFilter)}
+                sx={{ maxHeight: 40 }}
+                displayEmpty
+              >
                 <MenuItem value="all">Type</MenuItem>
                 <MenuItem value="folder">Folders</MenuItem>
                 <MenuItem value="file">Files</MenuItem>

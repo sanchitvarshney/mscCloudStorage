@@ -1,4 +1,4 @@
-import { FC, useState, useEffect, useMemo, useCallback } from "react";
+import { FC, useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -64,6 +64,7 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
   // const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   // const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
   const [shareLinkUrl, setShareLinkUrl] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
   const [expiresAt, setExpiresAt] = useState<string>("");
   const [fieldError, setFieldError] = useState<string>("");
 
@@ -112,6 +113,31 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
 
   const availablePeople = useMemo(() => filteredPeople, [filteredPeople]);
 
+  const displayedPeople = useMemo(
+    () =>
+      filteredPeople?.filter(
+        (person: any) =>
+          !peopleWithAccess.find((p) => p.email === person.email),
+      ) ?? [],
+    [filteredPeople, peopleWithAccess],
+  );
+
+  const resultsContainerRef = useRef<HTMLDivElement>(null);
+  const firstItemRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (searchQuery.trim() && displayedPeople.length > 0) {
+      resultsContainerRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+      const t = setTimeout(() => {
+        firstItemRef.current?.focus();
+      }, 150);
+      return () => clearTimeout(t);
+    }
+  }, [searchQuery, displayedPeople.length]);
+
   // useEffect(() => {
   //   if (file) {
   //     const existingAccess: PersonAccess[] =
@@ -140,18 +166,32 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
       "link" in shareLinkData?.data
     ) {
       setShareLinkUrl(shareLinkData?.data?.link ?? null);
+      setLinkCopied(false);
     } else if (typeof shareLinkData === "string") {
       setShareLinkUrl(shareLinkData);
+      setLinkCopied(false);
     }
   }, [shareLinkData]);
+
+  const handleCopyLink = () => {
+    if (!shareLinkUrl) return;
+    if (linkCopied) {
+      showToast("You already copied link", "success");
+      return;
+    }
+    navigator.clipboard.writeText(shareLinkUrl);
+    setLinkCopied(true);
+    showToast("Link copied", "success");
+  };
 
   const handleCloseModal = () => {
     onClose();
     setSearchQuery("");
     setGeneralAccess("restricted");
     setPeopleWithAccess([]);
-            setExpiresAt("");
-        setShareLinkUrl("");
+    setExpiresAt("");
+    setShareLinkUrl("");
+    setLinkCopied(false);
   };
 
   const handleAddPerson = (email: any, name?: string, key?: string) => {
@@ -187,9 +227,8 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
       folder_key: file?.type === "folder" ? file?.unique_key : "",
       restrict: generalAccess === "anyone" ? "N" : "Y",
       shared_with_user_id: sharedIds,
-      ...(expiresAt && {
-        expires_at: moment(expiresAt).format("DD/MM/YYYY hh:mm:ss A"),
-      }),
+      expires_at: expiresAt ? moment(expiresAt).format("YYYY-MM-DD HH:mm:ss") : "",
+    
     };
     try {
       const res: any = await triggerShareLink(payload).unwrap();
@@ -206,9 +245,8 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
       const message =
         error?.data?.message ??
         error?.data?.error ??
-        error?.message ??
-        "Field required";
-      setFieldError(typeof message === "string" ? message : "Field required");
+        error?.message 
+ showToast(message || "Failed to share file", "error");
     }
   };
 
@@ -293,7 +331,7 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
         </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ p: 0 }}>
+      <DialogContent sx={{ p: 0, }}>
         {/* General Access Section */}
         <Box
           sx={{ px: 3, py: 2, borderBottom: "1px solid rgba(0, 0, 0, 0.12)" }}
@@ -441,14 +479,16 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
             />
 
             {/* Search Results Dropdown */}
-            {searchQuery.trim() && filteredPeople?.length > 0 && (
+            {searchQuery.trim() && displayedPeople.length > 0 && (
               <Box
+                ref={resultsContainerRef}
                 sx={{
                   position: "absolute",
                   top: "100%",
                   left: 0,
                   right: 0,
                   mt: 0.5,
+                  mb: 1,
                   backgroundColor: "#fff",
                   borderRadius: 1,
                   boxShadow: "0 2px 10px 2px rgba(60,64,67,.15)",
@@ -457,27 +497,35 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
                   overflow: "auto",
                 }}
               >
-                {filteredPeople
-                  ?.filter(
-                    (person: any) =>
-                      !peopleWithAccess.find((p) => p.email === person.email),
-                  )
-                  .map((person: any) => (
-                    <Box
-                      key={person.email}
-                      onClick={() =>
-                        handleAddPerson(person.email, person.name, person.key)
+                {displayedPeople.map((person: any, index: number) => (
+                  <Box
+                    key={person.email}
+                    ref={index === 0 ? firstItemRef : undefined}
+                    tabIndex={index === 0 ? 0 : -1}
+                    role="button"
+                    onClick={() =>
+                      handleAddPerson(person.email, person.name, person.key)
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleAddPerson(person.email, person.name, person.key);
                       }
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        p: 1.5,
-                        cursor: "pointer",
-                        "&:hover": {
-                          backgroundColor: "rgba(0, 0, 0, 0.04)",
-                        },
-                      }}
-                    >
+                    }}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      p: 1.5,
+                      cursor: "pointer",
+                      outline: "none",
+                      "&:hover": {
+                        backgroundColor: "rgba(0, 0, 0, 0.04)",
+                      },
+                      "&:focus": {
+                        backgroundColor: "rgba(0, 0, 0, 0.04)",
+                      },
+                    }}
+                  >
                       <Avatar
                         sx={{
                           width: 32,
@@ -487,7 +535,7 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
                           mr: 1.5,
                         }}
                       >
-                        {person.name.charAt(0).toUpperCase()}
+                        {(person.name || person.email || "?").charAt(0).toUpperCase()}
                       </Avatar>
                       <Box sx={{ flex: 1 }}>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -632,9 +680,9 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
                   alignItems: "center",
                   gap: 1,
                   padding: 1,
-                  border: "1px solid #ddd",
+                  border: linkCopied ? "1px solid #34a853" : "1px solid #ddd",
                   borderRadius: 2,
-                  backgroundColor: "#f9f9f9",
+                  backgroundColor: linkCopied ? "rgba(52, 168, 83, 0.08)" : "#f9f9f9",
                 }}
               >
                 {/* Link Text */}
@@ -654,9 +702,16 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
                 <Button
                   variant="contained"
                   size="small"
-                  onClick={() => navigator.clipboard.writeText(shareLinkUrl)}
+                  onClick={handleCopyLink}
+                  sx={{
+                    ...(linkCopied && {
+                      backgroundColor: "#34a853",
+                      color: "#fff",
+                      "&:hover": { backgroundColor: "#2d8f47" },
+                    }),
+                  }}
                 >
-                  Copy
+                  {linkCopied ? "Copied" : "Copy"}
                 </Button>
               </Box>
             )}
