@@ -2,7 +2,7 @@ import { FC, useEffect, useState, useMemo } from "react";
 import { Box, CircularProgress } from "@mui/material";
 import { useFileContext } from "../context/FileContext";
 import { FileItem } from "../types";
-import FileManagerHeader, { SharedWithMeTypeFilter } from "./FileManager/FileManagerHeader";
+import FileManagerHeader from "./FileManager/FileManagerHeader";
 import FileListView from "./FileManager/FileListView";
 import FileGridView from "./FileManager/FileGridView";
 import FileContextMenu from "./FileManager/FileContextMenu";
@@ -53,8 +53,6 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const dispatch = useDispatch();
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
-  const [sharedWithMeTypeFilter, setSharedWithMeTypeFilter] =
-    useState<SharedWithMeTypeFilter>("all");
   const [createFolder, { isLoading: isFolderCreating }] =
     useCreateFolderMutation();
   const [uploadFiles, { isLoading: isUploading }] = useUploadFilesMutation();
@@ -321,12 +319,8 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       case "home":
         return !file.trash && !file.isSpam;
 
-      case "sharedWithMe": {
-        if (sharedWithMeTypeFilter !== "all" && file.type !== sharedWithMeTypeFilter) {
-          return false;
-        }
-        return true;
-      }
+      case "sharedWithMe":
+        return file;
       case "starred":
         return file.favorite && !file.trash;
       case "trash":
@@ -362,18 +356,13 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   };
 
   const handleDownload = async (file: FileItem) => {
-
-     const payload = {
-      file_key: file.unique_key,
-      type: currentView === "sharedWithMe" ? "share" : "list",
-    };
     if (!file.unique_key) {
       showToast("Cannot download: file key missing", "error");
       return;
     }
     dispatch(setDownloading({ loading: true, fileId: file.unique_key }));
     try {
-      const blob = await viewFile(payload).unwrap();
+      const blob = await viewFile({ file_key: file.unique_key }).unwrap();
       if (!blob) {
         showToast("No file data received", "error");
         return;
@@ -448,8 +437,6 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
         onBack={handleBack}
         onRefresh={refetch}
         isRefreshing={isFetchingFiles || isFetching}
-        sharedWithMeTypeFilter={sharedWithMeTypeFilter}
-        onSharedWithMeTypeFilterChange={setSharedWithMeTypeFilter}
       />
 
       <Box sx={{ p: 3 }}>
