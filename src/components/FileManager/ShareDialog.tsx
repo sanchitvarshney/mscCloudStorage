@@ -218,15 +218,15 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
     setFieldError("");
     const hasPeople = peopleWithAccess?.length > 0;
     const sharedIds = peopleWithAccess?.map((p) => p.key).filter(Boolean) ?? [];
-    if ( (!hasPeople || sharedIds.length === 0 ) && generalAccess === "anyone") {
+    if ((!hasPeople || sharedIds.length === 0) && generalAccess !== "anyone") {
       setFieldError("Field required");
       return;
     }
     const payload = {
       file_key: file?.type === "file" ? file?.unique_key : "",
       folder_key: file?.type === "folder" ? file?.unique_key : "",
-      restrict: "Y",
-      shared_with_user_id: sharedIds ? sharedIds : "",
+      restrict: generalAccess === "anyone" ? "N" : "Y",
+      shared_with_user_id: sharedIds ? sharedIds : [],
       expires_at: expiresAt
         ? moment(expiresAt).format("YYYY-MM-DD HH:mm:ss")
         : "2040-01-01 00:00:00",
@@ -236,13 +236,13 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
 
       if (res?.success) {
         setPeopleWithAccess([]);
-        showToast("File Shared successfully", "success");
+        showToast( generalAccess === "anyone" ? "Link is Made for Public" : "File Shared successfully", "success");
         setSearchQuery("");
         setGeneralAccess("restricted");
         setPeopleWithAccess([]);
       }
     } catch (error: any) {
-   
+      
       showToast("Failed to share file", "error");
     }
   };
@@ -351,14 +351,11 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
                 backgroundColor: "rgba(0, 0, 0, 0.02)",
               },
             }}
-            onClick={() => {
-            
+            onClick={() =>
               setGeneralAccess(
                 generalAccess === "restricted" ? "anyone" : "restricted",
-              );
-
-            
-            }}
+              )
+            }
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
               {generalAccess === "restricted" ? (

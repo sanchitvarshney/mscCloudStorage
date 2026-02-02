@@ -7,7 +7,6 @@ import {
   TextField,
   Divider,
   Paper,
-  // Grid,
   List,
   ListItem,
   ListItemIcon,
@@ -18,12 +17,7 @@ import {
   Edit,
   Email,
   Phone,
-  // LocationOn,
-  // Security,
-  // Notifications,
-  // Language,
-  // DarkMode,
-  CheckCircle,
+
 } from "@mui/icons-material";
 import { formatFileSize } from "../utils";
 import { useDispatch } from "react-redux";
@@ -117,7 +111,7 @@ const { showToast } = useToast();
   return (
     <Box sx={{ p: 3 }}>
       {/* Header Section */}
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 0 }}>
         <Box
           sx={{
             display: "flex",
@@ -144,22 +138,17 @@ const { showToast } = useToast();
                 onChange={(e) => handleChange("name", e.target.value)}
                 variant="outlined"
                 fullWidth
-                sx={{ mb: 2 }}
+               
               />
             ) : (
               <Typography
                 variant="h4"
-                sx={{ fontWeight: 500, color: "#202124", mb: 0.5 }}
+                sx={{ fontWeight: 500, color: "#202124",  }}
               >
                 {profileData.name}
               </Typography>
             )}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-              <CheckCircle sx={{ fontSize: 16, color: "#34a853" }} />
-              <Typography variant="body2" sx={{ color: "#5f6368" }}>
-                Verified Account
-              </Typography>
-            </Box>
+    
           </Box>
           <Button
             variant={isEditing ? "contained" : "outlined"}
@@ -190,7 +179,7 @@ const { showToast } = useToast();
         elevation={0}
         sx={{
           p: 3,
-          mb: 4,
+          mb: 2,
           bgcolor: "#f8f9fa",
           border: "1px solid #e0e0e0",
           borderRadius: 2,

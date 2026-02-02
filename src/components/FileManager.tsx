@@ -2,7 +2,7 @@ import { FC, useEffect, useState, useMemo } from "react";
 import { Box, CircularProgress } from "@mui/material";
 import { useFileContext } from "../context/FileContext";
 import { FileItem } from "../types";
-import FileManagerHeader from "./FileManager/FileManagerHeader";
+import FileManagerHeader, { SharedWithMeTypeFilter } from "./FileManager/FileManagerHeader";
 import FileListView from "./FileManager/FileListView";
 import FileGridView from "./FileManager/FileGridView";
 import FileContextMenu from "./FileManager/FileContextMenu";
@@ -51,6 +51,8 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   const [fileToDelete, setFileToDelete] = useState<any | null>(null);
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+   const [sharedWithMeTypeFilter, setSharedWithMeTypeFilter] =
+    useState<SharedWithMeTypeFilter>("all");
   const dispatch = useDispatch();
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
   const [createFolder, { isLoading: isFolderCreating }] =
@@ -319,8 +321,13 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       case "home":
         return !file.trash && !file.isSpam;
 
-      case "sharedWithMe":
-        return file;
+    
+      case "sharedWithMe": {
+        if (sharedWithMeTypeFilter !== "all" && file.type !== sharedWithMeTypeFilter) {
+          return false;
+        }
+        return true;
+      }
       case "starred":
         return file.favorite && !file.trash;
       case "trash":
@@ -437,6 +444,8 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
         onBack={handleBack}
         onRefresh={refetch}
         isRefreshing={isFetchingFiles || isFetching}
+                sharedWithMeTypeFilter={sharedWithMeTypeFilter}
+        onSharedWithMeTypeFilterChange={setSharedWithMeTypeFilter}
       />
 
       <Box sx={{ p: 3 }}>
