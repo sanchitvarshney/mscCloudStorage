@@ -362,13 +362,18 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   };
 
   const handleDownload = async (file: FileItem) => {
+
+     const payload = {
+      file_key: file.unique_key,
+      type: currentView === "sharedWithMe" ? "share" : "list",
+    };
     if (!file.unique_key) {
       showToast("Cannot download: file key missing", "error");
       return;
     }
     dispatch(setDownloading({ loading: true, fileId: file.unique_key }));
     try {
-      const blob = await viewFile({ file_key: file.unique_key }).unwrap();
+      const blob = await viewFile(payload).unwrap();
       if (!blob) {
         showToast("No file data received", "error");
         return;

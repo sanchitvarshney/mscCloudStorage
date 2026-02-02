@@ -218,17 +218,18 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
     setFieldError("");
     const hasPeople = peopleWithAccess?.length > 0;
     const sharedIds = peopleWithAccess?.map((p) => p.key).filter(Boolean) ?? [];
-    if (!hasPeople || sharedIds.length === 0) {
+    if ( (!hasPeople || sharedIds.length === 0 ) && generalAccess === "anyone") {
       setFieldError("Field required");
       return;
     }
     const payload = {
       file_key: file?.type === "file" ? file?.unique_key : "",
       folder_key: file?.type === "folder" ? file?.unique_key : "",
-      restrict: generalAccess === "anyone" ? "N" : "Y",
-      shared_with_user_id: sharedIds,
-      expires_at: expiresAt ? moment(expiresAt).format("YYYY-MM-DD HH:mm:ss") : "",
-    
+      restrict: "Y",
+      shared_with_user_id: sharedIds ? sharedIds : "",
+      expires_at: expiresAt
+        ? moment(expiresAt).format("YYYY-MM-DD HH:mm:ss")
+        : "2040-01-01 00:00:00",
     };
     try {
       const res: any = await triggerShareLink(payload).unwrap();
@@ -239,14 +240,10 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
         setSearchQuery("");
         setGeneralAccess("restricted");
         setPeopleWithAccess([]);
-
       }
     } catch (error: any) {
-      const message =
-        error?.data?.message ??
-        error?.data?.error ??
-        error?.message 
- showToast(message || "Failed to share file", "error");
+   
+      showToast("Failed to share file", "error");
     }
   };
 
@@ -331,7 +328,7 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
         </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ p: 0, }}>
+      <DialogContent sx={{ p: 0 }}>
         {/* General Access Section */}
         <Box
           sx={{ px: 3, py: 2, borderBottom: "1px solid rgba(0, 0, 0, 0.12)" }}
@@ -354,11 +351,14 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
                 backgroundColor: "rgba(0, 0, 0, 0.02)",
               },
             }}
-            onClick={() =>
+            onClick={() => {
+            
               setGeneralAccess(
                 generalAccess === "restricted" ? "anyone" : "restricted",
-              )
-            }
+              );
+
+            
+            }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
               {generalAccess === "restricted" ? (
@@ -526,33 +526,32 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
                       },
                     }}
                   >
-                      <Avatar
-                        sx={{
-                          width: 32,
-                          height: 32,
-                          bgcolor: "#34a853",
-                          fontSize: "14px",
-                          mr: 1.5,
-                        }}
-                      >
-                        {(person.name || person.email || "?").charAt(0).toUpperCase()}
-                      </Avatar>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {person.name || person.email}
+                    <Avatar
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        bgcolor: "#34a853",
+                        fontSize: "14px",
+                        mr: 1.5,
+                      }}
+                    >
+                      {(person.name || person.email || "?")
+                        .charAt(0)
+                        .toUpperCase()}
+                    </Avatar>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {person.name || person.email}
+                      </Typography>
+                      {person.name && (
+                        <Typography variant="caption" sx={{ color: "#5f6368" }}>
+                          {person.email}
                         </Typography>
-                        {person.name && (
-                          <Typography
-                            variant="caption"
-                            sx={{ color: "#5f6368" }}
-                          >
-                            {person.email}
-                          </Typography>
-                        )}
-                      </Box>
-                      <PersonAdd sx={{ color: "#5f6368", fontSize: 20 }} />
+                      )}
                     </Box>
-                  ))}
+                    <PersonAdd sx={{ color: "#5f6368", fontSize: 20 }} />
+                  </Box>
+                ))}
               </Box>
             )}
           </Box>
@@ -682,7 +681,9 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
                   padding: 1,
                   border: linkCopied ? "1px solid #34a853" : "1px solid #ddd",
                   borderRadius: 2,
-                  backgroundColor: linkCopied ? "rgba(52, 168, 83, 0.08)" : "#f9f9f9",
+                  backgroundColor: linkCopied
+                    ? "rgba(52, 168, 83, 0.08)"
+                    : "#f9f9f9",
                 }}
               >
                 {/* Link Text */}

@@ -265,6 +265,7 @@ const { showToast } = useToast();
                       variant="outlined"
                       size="small"
                       fullWidth
+                      disabled
                       type="email"
                     />
                   ) : (

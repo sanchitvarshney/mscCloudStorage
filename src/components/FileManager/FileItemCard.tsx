@@ -50,15 +50,7 @@ const FileItemCard: FC<FileItemCardProps> = ({
     if (isDownloading) {
       showToast("Please wait...", "success", isDownloading);
     }
-    if (isFileViewing) {
-      showToast("Please wait...", "success", isFileViewing);
-    }
-    return () => {
-   
-          showToast("Working...", "success");
-    
-    };
-  }, [isDownloading, isFileViewing]);
+  }, [isDownloading]);
 
   const handleDownload = (e: React.MouseEvent, file: FileItem) => {
     e.stopPropagation();

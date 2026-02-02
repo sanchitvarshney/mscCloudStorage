@@ -7,12 +7,7 @@ import {
   IconButton,
   CircularProgress,
 } from "@mui/material";
-import {
-  MoreVert,
-  Download,
-  Visibility,
-  Star,
-} from "@mui/icons-material";
+import { MoreVert, Download, Visibility, Star } from "@mui/icons-material";
 import { FileItem } from "../../types";
 import FileIcon from "./FileIcon";
 import { formatFileSize } from "../../utils";
@@ -50,18 +45,14 @@ const FileItemRow: FC<FileItemRowProps> = ({
   const isFileRestoring = isRestoring && restoringFileId === file?.unique_key;
   const isFileDownloading =
     isDownloading && downloadingFileId === file?.unique_key;
-      const { currentView } = useFileContext();
+  const { currentView } = useFileContext();
 
   useEffect(() => {
     if (isFileDownloading) {
       showToast("Please wait...", "success", isFileDownloading);
     }
-    if (isFileViewing) {
-      showToast("Please wait...", "success", isFileViewing);
-    }
-    return () => {
-      showToast("Working...", "success");
-    };
+
+
   }, [isFileDownloading]);
 
   const handleDoubleClick = () => {
@@ -150,12 +141,11 @@ const FileItemRow: FC<FileItemRowProps> = ({
             </Box>
           </Box>
         </TableCell>
-               <TableCell>
+        <TableCell>
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <Typography variant="body2" sx={{ color: "#5f6368" }}>
               {file?.sharedBy}
             </Typography>
-           
           </Box>
         </TableCell>
         <TableCell>
@@ -163,44 +153,40 @@ const FileItemRow: FC<FileItemRowProps> = ({
             <Typography variant="body2" sx={{ color: "#5f6368" }}>
               {file?.modifiedAt}
             </Typography>
-           
           </Box>
         </TableCell>
         <TableCell align="right">
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            {file.type === "file" && currentView !== "trash" &&  (
+            {file.type === "file" && currentView !== "trash" && (
               <>
-             
-                  <IconButton
-                    size="small"
-                    onClick={handleDownload}
-                    sx={{
-                      p: 0.5,
-                    }}
-                  >
-                    {isFileDownloading ? (
-                      <CircularProgress size={16} />
-                    ) : (
-                      <Download fontSize="small" />
-                    )}
-                  </IconButton>
-               
-               
-                  <IconButton
-                    size="small"
-                    onClick={handleView}
-                    disabled={isFileViewing}
-                    sx={{
-                      p: 0.5,
-                    }}
-                  >
-                    {isFileViewing ? (
-                      <CircularProgress size={16} />
-                    ) : (
-                      <Visibility fontSize="small" />
-                    )}
-                  </IconButton>
-              
+                <IconButton
+                  size="small"
+                  onClick={handleDownload}
+                  sx={{
+                    p: 0.5,
+                  }}
+                >
+                  {isFileDownloading ? (
+                    <CircularProgress size={16} />
+                  ) : (
+                    <Download fontSize="small" />
+                  )}
+                </IconButton>
+
+                <IconButton
+                  size="small"
+                  onClick={handleView}
+                  disabled={isFileViewing}
+                  sx={{
+                    p: 0.5,
+                  }}
+                >
+                  {isFileViewing ? (
+                    <CircularProgress size={16} />
+                  ) : (
+                    <Visibility fontSize="small" />
+                  )}
+                </IconButton>
               </>
             )}
             <IconButton
@@ -229,7 +215,6 @@ const FileItemRow: FC<FileItemRowProps> = ({
     <TableRow
       key={file.id}
       onDoubleClick={handleDoubleClick}
-
       sx={{
         "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.02)" },
         cursor: "pointer",
@@ -275,7 +260,7 @@ const FileItemRow: FC<FileItemRowProps> = ({
       </TableCell>
       <TableCell align="right">
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-          {file.type === "file" &&  currentView !== "trash" && (
+          {file.type === "file" && currentView !== "trash" && (
             <>
               {onDownload && (
                 <IconButton
