@@ -3,31 +3,26 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Box, Breadcrumbs, Typography, IconButton, Link } from "@mui/material";
 import { Home, ChevronRight, ArrowBack } from "@mui/icons-material";
 import FileManager from "../components/FileManager";
-import { useFetchFilesQuery } from "../services/dirManager/dirServices";
+import { useFileContext } from "../context/FileContext";
 
 const FolderViewPage: FC = () => {
   const { folderId } = useParams<{ folderId: string }>();
   const { state, pathname } = useLocation();
+ const { files } = useFileContext();
 
   const navigate = useNavigate();
   const baseRoute = pathname.split("/").filter(Boolean)[0] || "home";
   const [folderName, setFolderName] = useState<string>("Folder");
-  const { data } = useFetchFilesQuery(
-    { folderId },
-    {
-      refetchOnMountOrArgChange: true,
-      skip: !folderId,
-    },
-  );
+
 
   useEffect(() => {
-    if (data?.data && folderId) {
-      const folder = data.data.find((item: any) => item.id === folderId);
+    if (files && folderId) {
+      const folder = files.find((item: any) => item.id === folderId);
       if (folder) {
         setFolderName(folder.name || "Folder");
       }
     }
-  }, [data, folderId]);
+  }, [files, folderId]);
 
   const handleBreadcrumbClick = (path: string) => {
     navigate(path);

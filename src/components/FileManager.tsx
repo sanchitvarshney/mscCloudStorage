@@ -1,4 +1,5 @@
-import { FC, useEffect, useState, useMemo } from "react";
+import { FC, useEffect, useState, useCallback } from "react";
+import { useInView } from "react-intersection-observer";
 import { Box, CircularProgress } from "@mui/material";
 import { useFileContext } from "../context/FileContext";
 import { FileItem } from "../types";
@@ -12,7 +13,7 @@ import EmptyState from "./FileManager/EmptyState";
 import DeleteConfirmationDialog from "./reuseable/DeleteConfirmationDialog";
 import {
   useCreateFolderMutation,
-  useFetchFilesQuery,
+  useLazyFetchFilesQuery,
   useOnDeleteFileMutation,
   useOnFaviroteFileMutation,
   useOnRestoreFileMutation,
@@ -51,7 +52,16 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   const [fileToDelete, setFileToDelete] = useState<any | null>(null);
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
-   const [sharedWithMeTypeFilter, setSharedWithMeTypeFilter] =
+  const [offset, setOffset] = useState(0);
+  const [limit] = useState(10);
+  const [hasMore, setHasMore] = useState(true);
+  const [scrollRoot, setScrollRoot] = useState<Element | null>(null);
+  const { ref: loadMoreSentinelRef, inView } = useInView({
+    root: scrollRoot,
+    rootMargin: "100px",
+    threshold: 0,
+  });
+  const [sharedWithMeTypeFilter, setSharedWithMeTypeFilter] =
     useState<SharedWithMeTypeFilter>("all");
   const dispatch = useDispatch();
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
@@ -67,7 +77,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
  
   }, [isUploading]);
 
-  const queryArgs = useMemo(() => {
+  const queryArgs = useCallback(async () => {
     const args: {
       folderId?: string;
       isTrash?: number;
@@ -98,18 +108,68 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     }
   }, []);
 
-  const { data, refetch, isLoading, isFetching } = useFetchFilesQuery(
-    queryArgs,
-    {
-      refetchOnMountOrArgChange: true,
+  const [fetchFiles, { isLoading: loadingPosts, isFetching }] = useLazyFetchFilesQuery();
+
+  // Decrypted API response: { message, success, data, hasMore, nextOffset }
+  const loadMorePosts = useCallback(
+    async (reset = false) => {
+      if (loadingPosts) return;
+      if (!reset && !hasMore) return;
+
+      const requestOffset = reset ? 0 : offset;
+      const queryValues = await queryArgs();
+
+      try {
+        const res = await fetchFiles({
+          ...queryValues,
+          offset: requestOffset,
+          limit,
+        }).unwrap();
+
+        if (res?.success === false) {
+          showToast(res?.message || "Failed to load files", "error");
+          return;
+        }
+
+        const newPosts = Array.isArray(res?.data) ? res.data : [];
+        addFile((prev: any) => (reset ? newPosts : [...prev, ...newPosts]));
+        setHasMore(res?.hasMore ?? false);
+        setOffset(res?.nextOffset ?? requestOffset + limit);
+      } catch (err: any) {
+        showToast(
+          err?.data?.message?.msg ||
+            err?.message ||
+            "We're Sorry An unexpected error has occurred.",
+          "error"
+        );
+      }
     },
+    [queryArgs, offset, limit, hasMore, loadingPosts]
   );
 
-  const isFetchingFiles = isLoading;
-
-  useEffect(() => {
+  const refetch = useCallback(() => {
+    setOffset(0);
+    setHasMore(true);
     addFile([]);
+    loadMorePosts(true);
+  }, [loadMorePosts]);
+
+  // Initial load and when folder/view changes: reset and load first page
+  useEffect(() => {
+    setOffset(0);
+    setHasMore(true);
+    addFile([]);
+    loadMorePosts(true);
   }, [folderId, currentView]);
+
+  // Infinite scroll trigger: load more when sentinel is in view
+  useEffect(() => {
+    if (inView && hasMore && !loadingPosts) {
+      loadMorePosts(false);
+    }
+  }, [inView, hasMore, loadingPosts]);
+
+  const isFetchingFiles = loadingPosts;
 
   const [onDeleteFile] = useOnDeleteFileMutation();
   const [onRestoreFile] = useOnRestoreFileMutation();
@@ -233,18 +293,6 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     // const baseRoute = getRouteFromView(currentView);
     navigate(-1);
   };
-
-  useEffect(() => {
-    if (isFetchingFiles) {
-      return;
-    }
-    if (data?.data) {
-      const files = Array.isArray(data.data) ? data.data : [];
-      addFile(files);
-    } else if (data !== undefined) {
-      addFile([]);
-    }
-  }, [data, isFetchingFiles, folderId]);
 
   useEffect(() => {
     const handleCreateFolder = () => {
@@ -453,6 +501,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
           <EmptyState currentView={currentView} />
         ) : viewMode === "list" ? (
           <Box
+            ref={(el: unknown) => setScrollRoot(el instanceof Element ? el : null)}
             sx={{
               maxHeight: "calc(100vh - 170px)",
               minHeight: "calc(100vh - 170px)",
@@ -474,18 +523,27 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
                 <CircularProgress />
               </Box>
             ) : (
-              <FileListView
-                files={filteredFiles}
-                currentView={currentView}
-                onMenuClick={handleMenuClick}
-                onDownload={handleDownload}
-                onView={handleView}
-                onClickFolder={handleClickFolder}
-              />
+              <>
+                <FileListView
+                  files={filteredFiles}
+                  currentView={currentView}
+                  onMenuClick={handleMenuClick}
+                  onDownload={handleDownload}
+                  onView={handleView}
+                  onClickFolder={handleClickFolder}
+                />
+                <div ref={loadMoreSentinelRef} style={{ height: 1, minHeight: 1 }} aria-hidden="true" />
+                {hasMore && loadingPosts && (
+                  <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
+                    <CircularProgress size={24} />
+                  </Box>
+                )}
+              </>
             )}
           </Box>
         ) : (
           <Box
+            ref={(el: unknown) => setScrollRoot(el instanceof Element ? el : null)}
             sx={{
               maxHeight: "calc(100vh - 170px)",
               minHeight: "calc(100vh - 170px)",
@@ -507,13 +565,21 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
                 <CircularProgress />
               </Box>
             ) : (
-              <FileGridView
-                files={filteredFiles}
-                onMenuClick={handleMenuClick}
-                onDownload={handleDownload}
-                onView={handleView}
-                onClickFolder={handleClickFolder}
-              />
+              <>
+                <FileGridView
+                  files={filteredFiles}
+                  onMenuClick={handleMenuClick}
+                  onDownload={handleDownload}
+                  onView={handleView}
+                  onClickFolder={handleClickFolder}
+                />
+                <div ref={loadMoreSentinelRef} style={{ height: 1, minHeight: 1 }} aria-hidden="true" />
+                {hasMore && loadingPosts && (
+                  <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
+                    <CircularProgress size={24} />
+                  </Box>
+                )}
+              </>
             )}
           </Box>
         )}

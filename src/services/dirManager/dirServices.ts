@@ -30,8 +30,8 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
       },
     }),
     fetchFiles: builder.query({
-      query: ({ folderId, isTrash, isShared }) => {
-        const params: any = {};
+      query: ({ folderId, isTrash, isShared, offset = 0, limit = 10 }) => {
+        const params: any = { offset, limit };
 
         if (folderId) {
           params.parent_key = folderId;
@@ -152,7 +152,7 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
 
 export const {
   useCreateFolderMutation,
-  useFetchFilesQuery,
+  useLazyFetchFilesQuery,
   useUploadFilesMutation,
   useViewFileMutation,
   useOnDeleteFileMutation,
