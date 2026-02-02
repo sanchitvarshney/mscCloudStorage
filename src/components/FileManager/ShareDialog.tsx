@@ -33,6 +33,7 @@ import {
   useOnSearchUserMutation,
   useOnShareLinkMutation,
 } from "../../services/dirManager/dirServices";
+import { useToast } from "../../hooks/useToast";
 
 interface PersonAccess {
   email: string;
@@ -55,6 +56,7 @@ interface SearchUserItem {
 
 const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const { showToast } = useToast();
   const [generalAccess, setGeneralAccess] = useState<"anyone" | "restricted">(
     "restricted",
   );
@@ -65,8 +67,6 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
   const [expiresAt, setExpiresAt] = useState<string>("");
   const [fieldError, setFieldError] = useState<string>("");
 
-
-
   const [
     triggerSearchUser,
     { data: searchUserData, isLoading: isSearchingUsers },
@@ -76,9 +76,6 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
     triggerShareLink,
     { data: shareLinkData, isLoading: isCreatingShareLink },
   ] = useOnShareLinkMutation();
-
-
- 
 
   const debouncedSearch = useMemo(
     () =>
@@ -144,7 +141,6 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
     ) {
       setShareLinkUrl(shareLinkData?.data?.link ?? null);
     } else if (typeof shareLinkData === "string") {
-
       setShareLinkUrl(shareLinkData);
     }
   }, [shareLinkData]);
@@ -154,6 +150,8 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
     setSearchQuery("");
     setGeneralAccess("restricted");
     setPeopleWithAccess([]);
+            setExpiresAt("");
+        setShareLinkUrl("");
   };
 
   const handleAddPerson = (email: any, name?: string, key?: string) => {
@@ -198,6 +196,11 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
 
       if (res?.success) {
         setPeopleWithAccess([]);
+        showToast("File Shared successfully", "success");
+        setSearchQuery("");
+        setGeneralAccess("restricted");
+        setPeopleWithAccess([]);
+
       }
     } catch (error: any) {
       const message =
@@ -207,6 +210,13 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
         "Field required";
       setFieldError(typeof message === "string" ? message : "Field required");
     }
+  };
+
+  const onShareLink = () => {
+    if (shareLinkUrl) {
+      handleCloseModal();
+    }
+    handleShare();
   };
 
   // const handleMenuClick = (event: any, email: string) => {
@@ -659,7 +669,7 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
       >
         <Button onClick={handleCloseModal}>Cancel</Button>
         <Button
-          onClick={handleShare}
+          onClick={onShareLink}
           variant="contained"
           disabled={isCreatingShareLink}
           startIcon={

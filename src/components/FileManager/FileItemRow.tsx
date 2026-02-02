@@ -1,4 +1,4 @@
-import { FC, useEffect, } from "react";
+import { FC, useEffect } from "react";
 import {
   TableRow,
   TableCell,
@@ -9,7 +9,6 @@ import {
 } from "@mui/material";
 import {
   MoreVert,
-  ArrowDownward,
   Download,
   Visibility,
   Star,
@@ -19,6 +18,7 @@ import FileIcon from "./FileIcon";
 import { formatFileSize } from "../../utils";
 import { useSelector } from "react-redux";
 import { useToast } from "../../hooks/useToast";
+import { useFileContext } from "../../context/FileContext";
 
 interface FileItemRowProps {
   file: FileItem;
@@ -37,19 +37,32 @@ const FileItemRow: FC<FileItemRowProps> = ({
   isSharedWithMe = false,
   onClickFolder,
 }) => {
-const { showToast } =  useToast()
-  const { isViewing, viewingFileId, isRestoring, restoringFileId, isDownloading, downloadingFileId } =
-    useSelector((state: any) => state.loadingState);
+  const { showToast } = useToast();
+  const {
+    isViewing,
+    viewingFileId,
+    isRestoring,
+    restoringFileId,
+    isDownloading,
+    downloadingFileId,
+  } = useSelector((state: any) => state.loadingState);
   const isFileViewing = isViewing && viewingFileId === file?.unique_key;
   const isFileRestoring = isRestoring && restoringFileId === file?.unique_key;
-  const isFileDownloading = isDownloading && downloadingFileId === file?.unique_key;
+  const isFileDownloading =
+    isDownloading && downloadingFileId === file?.unique_key;
+      const { currentView } = useFileContext();
 
-    useEffect(() => {
-    if(isFileDownloading ){
+  useEffect(() => {
+    if (isFileDownloading) {
       showToast("Please wait...", "success", isFileDownloading);
-      
     }
-    }, [isFileDownloading]);
+    if (isFileViewing) {
+      showToast("Please wait...", "success", isFileViewing);
+    }
+    return () => {
+      showToast("Working...", "success");
+    };
+  }, [isFileDownloading]);
 
   const handleDoubleClick = () => {
     if (file.type === "folder" && onClickFolder) {
@@ -75,7 +88,6 @@ const { showToast } =  useToast()
       <TableRow
         key={file.unique_key}
         onDoubleClick={handleDoubleClick}
-   
         sx={{
           "&:hover": {
             backgroundColor: "rgba(0, 0, 0, 0.02)",
@@ -138,25 +150,27 @@ const { showToast } =  useToast()
             </Box>
           </Box>
         </TableCell>
+               <TableCell>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Typography variant="body2" sx={{ color: "#5f6368" }}>
+              {file?.sharedBy}
+            </Typography>
+           
+          </Box>
+        </TableCell>
         <TableCell>
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <Typography variant="body2" sx={{ color: "#5f6368" }}>
               {file?.modifiedAt}
             </Typography>
-            <ArrowDownward
-              sx={{
-                fontSize: 14,
-                ml: 0.5,
-                verticalAlign: "middle",
-              }}
-            />
+           
           </Box>
         </TableCell>
         <TableCell align="right">
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            {file.type === "file" && (
+            {file.type === "file" && currentView !== "trash" &&  (
               <>
-                {onDownload && (
+             
                   <IconButton
                     size="small"
                     onClick={handleDownload}
@@ -170,8 +184,8 @@ const { showToast } =  useToast()
                       <Download fontSize="small" />
                     )}
                   </IconButton>
-                )}
-                {onView && (
+               
+               
                   <IconButton
                     size="small"
                     onClick={handleView}
@@ -186,14 +200,13 @@ const { showToast } =  useToast()
                       <Visibility fontSize="small" />
                     )}
                   </IconButton>
-                )}
+              
               </>
             )}
             <IconButton
               size="small"
               onClick={(e) => {
                 e.stopPropagation();
-                
               }}
               disabled={isFileRestoring}
               sx={{
@@ -216,7 +229,7 @@ const { showToast } =  useToast()
     <TableRow
       key={file.id}
       onDoubleClick={handleDoubleClick}
-   
+
       sx={{
         "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.02)" },
         cursor: "pointer",
@@ -262,7 +275,7 @@ const { showToast } =  useToast()
       </TableCell>
       <TableCell align="right">
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-          {file.type === "file" && (
+          {file.type === "file" &&  currentView !== "trash" && (
             <>
               {onDownload && (
                 <IconButton

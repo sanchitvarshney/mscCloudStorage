@@ -56,12 +56,13 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   const [createFolder, { isLoading: isFolderCreating }] =
     useCreateFolderMutation();
   const [uploadFiles, { isLoading: isUploading }] = useUploadFilesMutation();
+  const [viewFile] = useViewFileMutation();
 
   useEffect(() => {
-    if (!isUploading) {
-      return;
+    if (isUploading) {
+      showToast("Working please wait ....", "success", isUploading);
     }
-    showToast("Working please wait ....", "success", isUploading);
+ 
   }, [isUploading]);
 
   const queryArgs = useMemo(() => {
@@ -111,8 +112,6 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   const [onDeleteFile] = useOnDeleteFileMutation();
   const [onRestoreFile] = useOnRestoreFileMutation();
   const [onFaviroteFile] = useOnFaviroteFileMutation();
-
-  const [viewFile] = useViewFileMutation();
 
   const { isDeleting, deletingFileId } = useSelector(
     (state: any) => state.loadingState,
@@ -255,21 +254,26 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
         files: FileList;
         formDataCreated?: boolean;
       };
-      const localStorePath = localStorage.getItem("folderPath");
-      if (files) {
-        const formData = new FormData();
-        Array.from(files).forEach((file) => {
-          formData.append("file", file);
-          formData.append(
-            "folder_path",
-            folderName && localStorePath ? `${localStorePath}` : "/home",
-          );
-          //@ts-ignore
-          formData.append("folder_id", folderId);
-        });
 
-        handleFileUploadChange(formData);
-      }
+      const localStorePath = localStorage.getItem("folderPath");
+
+      if (!files || files.length === 0) return;
+
+      const formData = new FormData();
+
+      // Take only the first file
+      const file = files[0];
+
+      formData.append("file", file);
+      formData.append(
+        "folder_path",
+        folderName && localStorePath ? localStorePath : "/home",
+      );
+
+      //@ts-ignore
+      formData.append("folder_id", folderId);
+
+      handleFileUploadChange(formData);
     };
 
     window.addEventListener("createFolder" as any, handleCreateFolder);

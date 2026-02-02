@@ -30,22 +30,35 @@ const FileItemCard: FC<FileItemCardProps> = ({
   onView,
   onClickFolder,
 }) => {
- const { showToast } = useToast();
+  const { showToast } = useToast();
   const [isHover, setIsHover] = useState(false);
- const {currentView} = useFileContext();
-  const { isViewing, viewingFileId, isRestoring, restoringFileId, isDownloading, downloadingFileId } =
-    useSelector((state: any) => state.loadingState);
+  const { currentView } = useFileContext();
+  const {
+    isViewing,
+    viewingFileId,
+    isRestoring,
+    restoringFileId,
+    isDownloading,
+    downloadingFileId,
+  } = useSelector((state: any) => state.loadingState);
   const isFileViewing = isViewing && viewingFileId === file?.unique_key;
   const isFileRestoring = isRestoring && restoringFileId === file?.unique_key;
-  const isFileDownloading = isDownloading && downloadingFileId === file?.unique_key;
+  const isFileDownloading =
+    isDownloading && downloadingFileId === file?.unique_key;
 
   useEffect(() => {
-  if(isDownloading ){
-    showToast("Please wait...", "success", isDownloading);
+    if (isDownloading) {
+      showToast("Please wait...", "success", isDownloading);
+    }
+    if (isFileViewing) {
+      showToast("Please wait...", "success", isFileViewing);
+    }
+    return () => {
+   
+          showToast("Working...", "success");
     
-  }
-  }, [isDownloading]);
-  
+    };
+  }, [isDownloading, isFileViewing]);
 
   const handleDownload = (e: React.MouseEvent, file: FileItem) => {
     e.stopPropagation();
@@ -63,7 +76,11 @@ const FileItemCard: FC<FileItemCardProps> = ({
   return (
     <Card
       onDoubleClick={() => {
-        if (file.type === "folder" && onClickFolder && currentView !== "trash") {
+        if (
+          file.type === "folder" &&
+          onClickFolder &&
+          currentView !== "trash"
+        ) {
           onClickFolder(file);
         }
       }}
@@ -78,7 +95,10 @@ const FileItemCard: FC<FileItemCardProps> = ({
         opacity: isFileRestoring ? 0.6 : 1,
         pointerEvents: isFileRestoring ? "none" : "auto",
         transition: "opacity 0.2s ease",
-        cursor: currentView === "trash" || file?.type === "file" ? "cursor" : "pointer",
+        cursor:
+          currentView === "trash" || file?.type === "file"
+            ? "cursor"
+            : "pointer",
       }}
     >
       <Box
@@ -163,7 +183,7 @@ const FileItemCard: FC<FileItemCardProps> = ({
           )}
         </Box>
 
-        {file.type === "file" &&  currentView !== "trash" && (
+        {file.type === "file" && currentView !== "trash" && (
           <Box
             sx={{
               position: "absolute",
@@ -188,7 +208,7 @@ const FileItemCard: FC<FileItemCardProps> = ({
                   alignItems: "center",
                 }}
               >
-                {(file.type === "file"  ) && onDownload &&  (
+                {file.type === "file" && onDownload && (
                   <IconButton
                     onClick={(e) => handleDownload(e, file)}
                     sx={{
