@@ -2,21 +2,21 @@ import { ViewType } from '../types';
 
 export const routeToViewMap: Record<string, ViewType> = {
   'home': 'home',
-  'my-drive': 'myDrive',
-  'shared-drives': 'sharedDrives',
+  // 'my-drive': 'myDrive',
+  // 'shared-drives': 'sharedDrives',
   'shared-with-me': 'sharedWithMe',
   'starred': 'starred',
-  'spam': 'spam',
+  // 'spam': 'spam',
   'trash': 'trash',
 };
 
 export const viewToRouteMap: Record<ViewType, string> = {
   'home': 'home',
-  'myDrive': 'my-drive',
-  'sharedDrives': 'shared-drives',
+  // 'myDrive': 'my-drive',
+  // 'sharedDrives': 'shared-drives',
   'sharedWithMe': 'shared-with-me',
   'starred': 'starred',
-  'spam': 'spam',
+  // 'spam': 'spam',
   'trash': 'trash',
 };
 

@@ -34,8 +34,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 interface FileManagerProps {
   folder?: {};
-  linkData?: any
-  
+  linkData?: any;
 }
 
 const FileManager: FC<FileManagerProps> = ({ folder }) => {
@@ -44,7 +43,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   const { folderId, folderName, folderPath } = folder ?? {};
 
   const navigate = useNavigate();
-  const { currentView, searchQuery, addFile , files} = useFileContext();
+  const { currentView, searchQuery, addFile, files } = useFileContext();
 
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
@@ -58,21 +57,21 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     useCreateFolderMutation();
   const [uploadFiles, { isLoading: isUploading }] = useUploadFilesMutation();
 
-
-
-
-
-
-
   useEffect(() => {
     if (!isUploading) {
       return;
     }
-    showToast("Working please wait ....","success", isUploading);
+    showToast("Working please wait ....", "success", isUploading);
   }, [isUploading]);
 
   const queryArgs = useMemo(() => {
-    const args: { folderId?: string; isTrash?: number; currentView: string , isShared?: number, type?: string} = {
+    const args: {
+      folderId?: string;
+      isTrash?: number;
+      currentView: string;
+      isShared?: number;
+      type?: string;
+    } = {
       currentView,
     };
 
@@ -82,7 +81,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     if (currentView === "trash") {
       args.isTrash = 1;
     }
-      if (currentView === "sharedWithMe" ) {
+    if (currentView === "sharedWithMe") {
       args.isShared = 1;
     }
 
@@ -96,16 +95,14 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     }
   }, []);
 
-  const {
-    data,
-    refetch,
-    isLoading,
-    isFetching
-  } = useFetchFilesQuery(queryArgs, {
-    refetchOnMountOrArgChange: true,
-  });
+  const { data, refetch, isLoading, isFetching } = useFetchFilesQuery(
+    queryArgs,
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  );
 
-  const isFetchingFiles = isLoading ;
+  const isFetchingFiles = isLoading;
 
   useEffect(() => {
     addFile([]);
@@ -238,17 +235,15 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
 
   useEffect(() => {
     if (isFetchingFiles) {
-      return; 
+      return;
     }
-    if (data?.data ) {
-     
-      const files = Array.isArray(data.data ) ? data.data : [];
+    if (data?.data) {
+      const files = Array.isArray(data.data) ? data.data : [];
       addFile(files);
     } else if (data !== undefined) {
       addFile([]);
     }
-  }, [data, isFetchingFiles, folderId, ]);
-
+  }, [data, isFetchingFiles, folderId]);
 
   useEffect(() => {
     const handleCreateFolder = () => {
@@ -277,16 +272,12 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       }
     };
 
-
-
     window.addEventListener("createFolder" as any, handleCreateFolder);
     window.addEventListener("fileUpload" as any, handleFileUpload);
-
 
     return () => {
       window.removeEventListener("createFolder" as any, handleCreateFolder);
       window.removeEventListener("fileUpload" as any, handleFileUpload);
-    
     };
   }, [folderId, folderName]);
 
@@ -309,8 +300,6 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       });
   };
 
-
-
   const filteredFiles = files?.filter((file: any) => {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
@@ -325,8 +314,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     switch (currentView) {
       case "home":
         return !file.trash && !file.isSpam;
-      case "sharedDrives":
-        return !file.trash && file.sharedWith && file.sharedWith.length > 0;
+
       case "sharedWithMe":
         return file;
       case "starred":
@@ -384,15 +372,20 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
       showToast("Download started", "success");
     } catch (err: any) {
       console.error("Download failed:", err);
-      showToast(err?.data?.message ?? err?.message ?? "Download failed", "error");
+      showToast(
+        err?.data?.message ?? err?.message ?? "Download failed",
+        "error",
+      );
     } finally {
       dispatch(setDownloading({ loading: false, fileId: null }));
     }
   };
 
-
   const handleView = async (file: any) => {
-    const payload = { file_key: file.unique_key, type: currentView === "sharedWithMe" ? "share" : "list" };
+    const payload = {
+      file_key: file.unique_key,
+      type: currentView === "sharedWithMe" ? "share" : "list",
+    };
 
     dispatch(setViewing({ loading: true, fileId: file.unique_key }));
     try {
@@ -420,8 +413,6 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     setMenuAnchor(null);
   };
 
-
-
   const handleMenuClick = (event: any, file: any) => {
     setMenuAnchor(event.currentTarget);
     setSelectedFile(file);
@@ -431,7 +422,6 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     setMenuAnchor(null);
     setSelectedFile(null);
   };
-
 
   return (
     <Box sx={{ flexGrow: 1, backgroundColor: "#fff" }}>

@@ -15,7 +15,6 @@ import {
 } from "@mui/material";
 import {
   Home,
-  Business,
   People,
   Star,
   Delete,
@@ -41,7 +40,7 @@ const Sidebar: React.FC = () => {
   const menuItems: { label: string; view: ViewType; icon: React.ReactNode }[] =
     [
       { label: "Home", view: "home", icon: <Home /> },
-      { label: "Shared Drives", view: "sharedDrives", icon: <Business /> },
+      // { label: "Shared Drives", view: "sharedDrives", icon: <Business /> },
       { label: "Shared with me", view: "sharedWithMe", icon: <People /> },
       { label: "Starred", view: "starred", icon: <Star /> },
       { label: "Trash", view: "trash", icon: <Delete /> },

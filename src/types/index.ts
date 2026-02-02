@@ -25,9 +25,9 @@ export interface StorageInfo {
 
 export type ViewType =
   | "home"
-  | "myDrive"
-  | "sharedDrives"
+  // | "myDrive"
+  // | "sharedDrives"
   | "sharedWithMe"
   | "starred"
-  | "spam"
+  // | "spam"
   | "trash";
