@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, memo } from "react";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { ViewList, ViewModule } from "@mui/icons-material";
 import AnimatedIcon from "../reuseable/AnimatedIcon";
@@ -57,4 +57,4 @@ const ViewToggle: FC<ViewToggleProps> = ({ viewMode, onViewChange }) => {
   );
 };
 
-export default ViewToggle;
+export default memo(ViewToggle);

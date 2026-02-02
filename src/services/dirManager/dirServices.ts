@@ -38,7 +38,7 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
         }
 
         return {
-          url: isTrash ? "/folder/trash" : isShared  ? "/share/shared" :   "/folder/list",
+          url: isTrash ? "/folder/trash" : isShared  && !folderId ? "/share/shared" :  isShared && folderId ? `/folder/list?type=share` : "/folder/list",
           method: "GET",
           params,
         };
@@ -64,8 +64,8 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
       transformResponse: (response: any) => response,
     }),
     viewFile: builder.mutation({
-      query: ({ file_key }) => ({
-        url: `/folder/list?file_key=${file_key}`,
+      query: ({ file_key, type }) => ({
+        url: `/folder/list?file_key=${file_key}&type=${type}`,
         method: "GET",
 
         responseHandler: (response: any) => response.blob(),

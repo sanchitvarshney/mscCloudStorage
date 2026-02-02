@@ -193,7 +193,7 @@ const { showToast } =  useToast()
               size="small"
               onClick={(e) => {
                 e.stopPropagation();
-                onMenuClick(e, file);
+                
               }}
               disabled={isFileRestoring}
               sx={{

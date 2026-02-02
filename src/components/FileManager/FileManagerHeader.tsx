@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, memo } from "react";
 import { Box, Typography, FormControl, Select, MenuItem, IconButton, CircularProgress } from "@mui/material";
 import { ArrowBack, Refresh } from "@mui/icons-material";
 import { ViewType } from "../../types";
@@ -117,4 +117,4 @@ const FileManagerHeader: FC<FileManagerHeaderProps> = ({
   );
 };
 
-export default FileManagerHeader;
+export default memo(FileManagerHeader);

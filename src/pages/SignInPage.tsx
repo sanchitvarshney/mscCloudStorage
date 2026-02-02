@@ -4,9 +4,10 @@ import { GoogleLogin } from "@react-oauth/google";
 import { useLoginGoogleMutation } from "../services/auth";
 import { useAuth } from "../hooks/AuthHook";
 import { useToast } from "../hooks/useToast";
+import { useEffect } from "react";
 
 const Login = () => {
- const { showToast } = useToast();
+  const { showToast } = useToast();
   const navigate = useNavigate();
   const { signIn } = useAuth();
 
@@ -30,9 +31,19 @@ const Login = () => {
         }
       })
       .catch((err: any) => {
-        showToast(err?.data?.message || err?.message || "Login failed", "error");
+        showToast(
+          err?.data?.message || err?.message || "Login failed",
+          "error",
+        );
       });
   };
+     const user = localStorage.getItem("user");
+  useEffect(() => {
+ 
+    if (user) {
+      navigate("/home");
+    }
+  }, [user]);
 
   return (
     <Box
@@ -85,7 +96,7 @@ const Login = () => {
               <Typography variant="body2" color="text.secondary" mt={2}>
                 Please wait, Loading...
               </Typography>
-              </Box>
+            </Box>
           ) : (
             <Box
               sx={{

@@ -72,7 +72,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   }, [isUploading]);
 
   const queryArgs = useMemo(() => {
-    const args: { folderId?: string; isTrash?: number; currentView: string , isShared?: number} = {
+    const args: { folderId?: string; isTrash?: number; currentView: string , isShared?: number, type?: string} = {
       currentView,
     };
 
@@ -232,8 +232,8 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
 
   const handleBack = () => {
     addFile([]);
-    const baseRoute = getRouteFromView(currentView);
-    navigate(`/${baseRoute}`, { replace: true, state: null });
+    // const baseRoute = getRouteFromView(currentView);
+    navigate(-1);
   };
 
   useEffect(() => {
@@ -392,7 +392,7 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
 
 
   const handleView = async (file: any) => {
-    const payload = { file_key: file.unique_key };
+    const payload = { file_key: file.unique_key, type: currentView === "sharedWithMe" ? "share" : "list" };
 
     dispatch(setViewing({ loading: true, fileId: file.unique_key }));
     try {

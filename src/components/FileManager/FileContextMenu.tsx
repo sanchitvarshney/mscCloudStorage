@@ -77,7 +77,10 @@ const FileContextMenu: FC<FileContextMenuProps> = ({
               Download
             </MenuItem>
           )}
-          <MenuItem onClick={() => file && onShare(file)}>
+      {
+        currentView !== "sharedWithMe" && (
+        <>
+            <MenuItem onClick={() => file && onShare(file)}>
             <Share sx={{ mr: 1 }} fontSize="small" />
             Share
           </MenuItem>
@@ -109,7 +112,11 @@ const FileContextMenu: FC<FileContextMenuProps> = ({
               </>
             )}
           </MenuItem>
-          <MenuItem
+        </>
+        )
+      }
+        {currentView !== "sharedWithMe" && (
+            <MenuItem
             onClick={() => {
               if (file && !isFileDeleting) {
                 onDelete(file);
@@ -125,6 +132,7 @@ const FileContextMenu: FC<FileContextMenuProps> = ({
             )}
             Trash
           </MenuItem>
+        )}
         </>
       )}
     </Menu>

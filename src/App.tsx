@@ -5,7 +5,6 @@ import AppContent from "./components/AppContent";
 import SignInPage from "./pages/SignInPage";
 import HomePage from "./pages/HomePage";
 import OfflinePage from "./pages/OfflinePage";
-// import SharePreviewPage from "./pages/SharePreviewPage";
 import Protected from "./components/Protected";
 
 const App: React.FC = () => {
@@ -14,7 +13,6 @@ const App: React.FC = () => {
       <FileProvider>
         <Routes>
           <Route path="/signin" element={<SignInPage />} />
-          {/* <Route path="/share/validate/:shareKey" element={<SharePreviewPage />} /> */}
           <Route
             path="/"
             element={
