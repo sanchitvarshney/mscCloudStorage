@@ -38,6 +38,7 @@ interface FileManagerProps {
   linkData?: any;
   /** When true (e.g. home?key=xxx), skip folder list fetch until redirect to shared-with-me */
   skipFetchForSharedRedirect?: boolean;
+
 }
 
 const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect }) => {
