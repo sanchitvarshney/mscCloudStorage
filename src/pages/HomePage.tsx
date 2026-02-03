@@ -66,7 +66,7 @@ const HomePage: FC = () => {
   const handleView = async (file: any) => {
     const payload = {
       file_key: file,
-      type: "list",
+      type: "share",
     };
 
     try {
