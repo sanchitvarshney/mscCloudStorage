@@ -35,7 +35,7 @@ const HomePage: FC = () => {
       const { key } = linkData?.data;
       if (key) {
     
-        handleView(shareKeyFromUrl);
+        handleView(key);
       } else {
         nav("/shared-with-me");
       }
@@ -81,7 +81,7 @@ const HomePage: FC = () => {
       }
       const url = URL.createObjectURL(blob);
       window.open(url, "_blank");
-      nav("/home");
+      // nav("/home");
     } catch (err) {
       console.error("Failed to view file:", err);
       showToast("Failed to view file", "error");
