@@ -145,7 +145,7 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
         }
 
         const newPosts = Array.isArray(res?.data) ? res.data : [];
-        addFile((prev: any) => (reset ? newPosts : [...prev, ...newPosts]));
+        addFile(() => (reset ? newPosts : [...files, ...newPosts]));
         setHasMore(res?.hasMore ?? false);
         setOffset(res?.nextOffset ?? requestOffset + limit);
       } catch (err: any) {
@@ -167,8 +167,7 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
     loadMorePosts(true);
   }, [loadMorePosts]);
 
-  // Initial load and when folder/view changes: reset and load first page
-  // Skip when share key in URL — only validate link and redirect, then fetch /share/shared
+
   useEffect(() => {
     if (skipFetchForSharedRedirect) return;
     setOffset(0);
