@@ -20,7 +20,7 @@ import {
   useUploadFilesMutation,
   useViewFileMutation,
 } from "../services/dirManager/dirServices";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getRouteFromView } from "../utils/routeMapping";
 import { useToast } from "../hooks/useToast";
 import {
@@ -36,15 +36,23 @@ import { useDispatch, useSelector } from "react-redux";
 interface FileManagerProps {
   folder?: {};
   linkData?: any;
+  /** When true (e.g. home?key=xxx), skip folder list fetch until redirect to shared-with-me */
+  skipFetchForSharedRedirect?: boolean;
 }
 
-const FileManager: FC<FileManagerProps> = ({ folder }) => {
+const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect }) => {
   const { showToast } = useToast();
+  const location = useLocation();
   //@ts-ignore
   const { folderId, folderName, folderPath } = folder ?? {};
 
   const navigate = useNavigate();
   const { currentView,  addFile, files } = useFileContext();
+
+  // Derive isSharedFromRoute from URL so we call /share/shared when on shared-with-me
+  // even before setCurrentView has run (avoids race with /folder/list)
+  const isSharedFromRoute =
+    location.pathname.split("/").filter(Boolean)[0] === "shared-with-me";
 
 
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
@@ -98,12 +106,13 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
     if (currentView === "trash") {
       args.isTrash = 1;
     }
-    if (currentView === "sharedWithMe") {
+    // Use route so /share/shared is called as soon as we're on shared-with-me (avoids race)
+    if (currentView === "sharedWithMe" || isSharedFromRoute) {
       args.isShared = 1;
     }
 
     return args;
-  }, [folderId, currentView]);
+  }, [folderId, currentView, isSharedFromRoute]);
 
   useEffect(() => {
     const storedViewMode = localStorage.getItem("viewMode");
@@ -159,12 +168,14 @@ const FileManager: FC<FileManagerProps> = ({ folder }) => {
   }, [loadMorePosts]);
 
   // Initial load and when folder/view changes: reset and load first page
+  // Skip when share key in URL — only validate link and redirect, then fetch /share/shared
   useEffect(() => {
+    if (skipFetchForSharedRedirect) return;
     setOffset(0);
     setHasMore(true);
     addFile([]);
     loadMorePosts(true);
-  }, [folderId, currentView]);
+  }, [folderId, currentView, isSharedFromRoute, skipFetchForSharedRedirect]);
 
   // Infinite scroll trigger: load more when sentinel is in view
   useEffect(() => {

@@ -21,6 +21,7 @@ const HomePage: FC = () => {
 
   useEffect(() => {
     if (linkData?.data) {
+ 
       nav("/shared-with-me");
     }
   }, [linkData]);
@@ -42,11 +43,15 @@ const HomePage: FC = () => {
     [folderId, folderName, folderPath],
   );
 
+  // When share key is in URL we will redirect to shared-with-me; skip folder list fetch
+  const skipFetchForSharedRedirect = !!shareKeyFromUrl;
+
   return (
     <FileManager
       key={folderId || "root"}
       folder={folder}
       linkData={shareKeyFromUrl ? { key: shareKeyFromUrl } : undefined}
+      skipFetchForSharedRedirect={skipFetchForSharedRedirect}
     />
   );
 };

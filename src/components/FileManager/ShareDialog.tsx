@@ -228,8 +228,8 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
       restrict: generalAccess === "anyone" ? "N" : "Y",
       shared_with_user_id: sharedIds ? sharedIds : [],
       expires_at: expiresAt
-        ? moment(expiresAt).format("YYYY-MM-DD HH:mm:ss")
-        : "2040-01-01 00:00:00",
+        ? moment(expiresAt).format("DD-MM-YYYY HH:mm:ss")
+        : "01-01-2040 00:00:00",
     };
     try {
       const res: any = await triggerShareLink(payload).unwrap();
