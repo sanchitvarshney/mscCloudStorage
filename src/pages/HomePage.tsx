@@ -34,7 +34,8 @@ const HomePage: FC = () => {
     if (linkData?.data) {
       const { key } = linkData?.data;
       if (key) {
-        handleView(key);
+    
+        handleView(shareKeyFromUrl);
       } else {
         nav("/shared-with-me");
       }
