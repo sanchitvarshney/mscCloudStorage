@@ -38,7 +38,7 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
         }
 
         return {
-          url: isTrash ? "/folder/trash" : isShared  && !folderId ? "/share/shared" :  isShared && folderId ? `/folder/list?type=share` : "/folder/list",
+          url: isTrash ? "/folder/trash" : isShared  && !folderId  ? "/share/shared" :  isShared && folderId ? `/folder/list?type=share` : "/folder/list",
           method: "GET",
           params,
         };

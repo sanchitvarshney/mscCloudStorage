@@ -50,10 +50,11 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
   const navigate = useNavigate();
   const { currentView,  addFile, files } = useFileContext();
 
-  // Derive isSharedFromRoute from URL so we call /share/shared when on shared-with-me
-  // even before setCurrentView has run (avoids race with /folder/list)
-  const isSharedFromRoute =
-    location.pathname.split("/").filter(Boolean)[0] === "shared-with-me";
+  // Derive view from URL only — avoids trash + shared both firing when currentView is stale
+  const routeSegment =
+    location.pathname.split("/").filter(Boolean)[0] || "home";
+  const isSharedFromRoute = routeSegment === "shared-with-me";
+  const isTrashFromRoute = routeSegment === "trash";
 
 
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
@@ -104,16 +105,16 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
     if (folderId) {
       args.folderId = folderId;
     }
-    if (currentView === "trash") {
+    // Use route only — prevents trash + shared both firing when currentView is stale
+    if (isTrashFromRoute) {
       args.isTrash = 1;
     }
-    // Use route so /share/shared is called as soon as we're on shared-with-me (avoids race)
-    if (currentView === "sharedWithMe" || isSharedFromRoute) {
+    if (isSharedFromRoute) {
       args.isShared = 1;
     }
 
     return args;
-  }, [folderId, currentView, isSharedFromRoute]);
+  }, [folderId, currentView, isSharedFromRoute, isTrashFromRoute]);
 
   useEffect(() => {
     const storedViewMode = localStorage.getItem("viewMode");
@@ -169,13 +170,14 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
   }, [loadMorePosts]);
 
 
+  // Depend on route only so we don't run twice (currentView can lag and trigger trash + shared)
   useEffect(() => {
     if (skipFetchForSharedRedirect) return;
     setOffset(0);
     setHasMore(true);
     addFile([]);
     loadMorePosts(true);
-  }, [folderId, currentView, isSharedFromRoute, skipFetchForSharedRedirect]);
+  }, [folderId, routeSegment, skipFetchForSharedRedirect]);
 
   // Infinite scroll trigger: load more when sentinel is in view
   useEffect(() => {
