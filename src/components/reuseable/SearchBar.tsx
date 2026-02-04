@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useFileContext } from "../../context/FileContext";
 import {
   IconButton,
@@ -11,38 +11,50 @@ import { Search, Close } from "@mui/icons-material";
 import { debounce } from "../../utils";
 import { useLazyOnSearchFilesQuery } from "../../services/dirManager/dirServices";
 
+const MIN_SEARCH_LENGTH = 3;
+const SEARCH_DEBOUNCE_MS = 300;
+
 const SearchBar: React.FC = () => {
-  const { searchQuery, setSearchQuery , addFile, currentView} = useFileContext();
+  const { searchQuery, setSearchQuery, addFile, currentView } = useFileContext();
   const [isFocused, setIsFocused] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
   const searchBarRef = useRef<HTMLDivElement>(null);
 
   const [onSearchFiles] = useLazyOnSearchFilesQuery();
-  const debouncedSearch = useMemo(
-    () =>
-      debounce((query: string) => {
-        if (!query.trim()) return;
-        if (currentView !== "home") return;
-        onSearchFiles({ search: query.trim() })
-          .unwrap()
-          .then((res: any) => {
-            const list = Array.isArray(res?.data) ? res.data : [];
-            addFile(list);
-          })
-          .catch(() => {
-            addFile([]);
-          });
-      }, 300),
-    [onSearchFiles, addFile, currentView],
-  );
 
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      setSearchQuery(value);
-      debouncedSearch(value);
-    },
-    [debouncedSearch],
-  );
+  const searchDepsRef = useRef({ onSearchFiles, addFile, currentView });
+  searchDepsRef.current = { onSearchFiles, addFile, currentView };
+
+  const debouncedSearchRef = useRef<ReturnType<typeof debounce> | null>(null);
+  if (debouncedSearchRef.current === null) {
+    //@ts-ignore
+    debouncedSearchRef.current = debounce((query: string) => {
+      const trimmed = query.trim();
+      if (!trimmed || trimmed.length < MIN_SEARCH_LENGTH) return;
+      const { onSearchFiles, addFile, currentView } = searchDepsRef.current;
+      if (currentView !== "home") return;
+      onSearchFiles({ search: trimmed })
+        .unwrap()
+        .then((res: any) => {
+          const list = Array.isArray(res?.data) ? res.data : [];
+          addFile(list);
+        })
+        .catch(() => {
+          addFile([]);
+        });
+    }, SEARCH_DEBOUNCE_MS);
+  }
+
+  useEffect(() => {
+    return () => {
+      debouncedSearchRef.current?.cancel?.();
+    };
+  }, []);
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchQuery(value);
+    debouncedSearchRef.current?.(value);
+  }, [setSearchQuery]);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (

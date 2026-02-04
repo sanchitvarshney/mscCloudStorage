@@ -186,7 +186,7 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
     }
   }, [inView, hasMore, loadingPosts]);
 
-  const isFetchingFiles = loadingPosts;
+  const isFetchingFiles = loadingPosts || isFetching;
 
   const [onDeleteFile] = useOnDeleteFileMutation();
   const [onRestoreFile] = useOnRestoreFileMutation();
