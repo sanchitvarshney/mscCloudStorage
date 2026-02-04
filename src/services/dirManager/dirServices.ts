@@ -71,6 +71,24 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
         responseHandler: (response: any) => response.blob(),
       }),
     }),
+        viewFolder: builder.mutation({
+      query: ({ parent_key }) => ({
+        url: `/folder/list?parent_key=${parent_key}&type=list`,
+        method: "GET",
+
+      }),
+        transformResponse: async (response: any) => {
+        if (
+          !response ||
+          typeof response !== "object" ||
+          !response.encryptedKey
+        ) {
+          return response;
+        }
+
+        return decryptedData(response);
+      },
+    }),
     onDeleteFile: builder.mutation({
       query: (credentials) => ({
         url: "/folder/trash",
@@ -133,7 +151,6 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
         url: `/share/share/validate?key=${share_key}`,
         method: "GET",
       }),
-    
       transformResponse: async (response: any) => {
         if (
           !response ||
@@ -145,7 +162,8 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
         return decryptedData(response);
       },
     }),
-       onSearchFiles: builder.query({
+  
+    onSearchFiles: builder.query({
       query: ({ search }) => {
   
 
@@ -183,5 +201,7 @@ export const {
   useOnSearchUserMutation,
   useOnShareLinkMutation,
   useFetchSharedFileInfoQuery,
-  useLazyOnSearchFilesQuery
+
+  useLazyOnSearchFilesQuery,
+  useViewFolderMutation,
 } = extendedAuthApi;

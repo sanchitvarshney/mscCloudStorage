@@ -3,6 +3,27 @@ import { baseApiInstance } from "./apiInstance";
 
 const extendedAuthApi = baseApiInstance.injectEndpoints({
   endpoints: (builder) => ({
+    loginWithEmail: builder.mutation({
+      query: async (credentials: { email: string; password: string }) => {
+        const encrypt = await encryptPayload(credentials);
+        return({
+        url: "/login/email",
+        method: "POST",
+        body: encrypt,
+      })
+
+      } ,
+      transformResponse: async (response: any) => {
+        if (
+          !response ||
+          typeof response !== "object" ||
+          !response.encryptedKey
+        ) {
+          return response;
+        }
+        return decryptedData(response);
+      },
+    }),
     loginGoogle: builder.mutation({
       query: (credentials) => ({
         url: "/login/google",
@@ -68,6 +89,7 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
 });
 
 export const {
+  useLoginWithEmailMutation,
   useLoginGoogleMutation,
   useGetProfileQuery,
   useUpdateProfileMutation,

@@ -429,7 +429,7 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
     }
     dispatch(setDownloading({ loading: true, fileId: file.unique_key }));
     try {
-      const blob = await viewFile({ file_key: file.unique_key }).unwrap();
+      const blob = await viewFile({ file_key: file.unique_key, type: "list" }).unwrap();
       if (!blob) {
         showToast("No file data received", "error");
         return;
