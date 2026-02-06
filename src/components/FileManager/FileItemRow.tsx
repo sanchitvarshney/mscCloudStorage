@@ -196,7 +196,8 @@ const FileItemRow: FC<FileItemRowProps> = ({
                 </IconButton>
               </>
             )}
-            <IconButton
+            {currentView !== "sharedWithMe" && (
+              <IconButton
               size="small"
               onClick={(e) => {
                 e.stopPropagation();
@@ -214,6 +215,7 @@ const FileItemRow: FC<FileItemRowProps> = ({
                 <MoreVert fontSize="small" />
               )}
             </IconButton>
+            )}
           </Box>
         </TableCell>
       </TableRow>
