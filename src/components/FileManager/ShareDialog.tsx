@@ -71,7 +71,7 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
   const [expiresAt, setExpiresAt] = useState<string>("");
     const [key, setKey] = useState<string>("");
   const [fieldError, setFieldError] = useState<string>("");
-  const [triggerFetchSharedData] = useLazyOnfetchSharedDataQuery()
+  const [triggerFetchSharedData, { isLoading: isLoadingSharedData, isFetching: isFetchingSharedData }] = useLazyOnfetchSharedDataQuery()
 
   const [
     triggerSearchUser,
@@ -337,7 +337,17 @@ setKey(key)
         },
       }}
     >
-      <DialogTitle
+{
+  isLoadingSharedData || isFetchingSharedData ? (
+    <Box>
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%", flexDirection: "column", minHeight: "160px", gap: 2 }}>
+        <Typography variant="h6">Loading...</Typography>
+        <CircularProgress />
+      </Box>
+    </Box>
+  ): (
+    <>
+          <DialogTitle
         sx={{
           px: 3,
           py: 2,
@@ -803,6 +813,9 @@ setKey(key)
           Done
         </Button>
       </DialogActions>
+    </>
+  )
+}
 
       {/* Role Selection Menu */}
       {/* <Menu
