@@ -11,7 +11,7 @@ import FileGridView from "./FileManager/FileGridView";
 import FileContextMenu from "./FileManager/FileContextMenu";
 import CreateFolderDialog from "./FileManager/CreateFolderDialog";
 import ShareDialog from "./FileManager/ShareDialog";
-// import EmptyState from "./FileManager/EmptyState";
+import EmptyState from "./FileManager/EmptyState";
 import DeleteConfirmationDialog from "./reuseable/DeleteConfirmationDialog";
 import {
   useCreateFolderMutation,
@@ -25,6 +25,12 @@ import {
 } from "../services/dirManager/dirServices";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getRouteFromView } from "../utils/routeMapping";
+import { getViewTitle } from "../utils";
+import {
+  getBreadcrumbFromCookie,
+  setBreadcrumbCookie,
+  type BreadcrumbSegment,
+} from "../utils/cookies";
 import { useToast } from "../hooks/useToast";
 import {
   setDeleting,
@@ -71,6 +77,7 @@ const FileManager: FC<FileManagerProps> = ({
   const [offset, setOffset] = useState(0);
   const [limit] = useState(10);
   const [hasMore, setHasMore] = useState(true);
+  const [hasFetchedForCurrentView, setHasFetchedForCurrentView] = useState(false);
   const [scrollRoot, setScrollRoot] = useState<Element | null>(null);
   const { ref: loadMoreSentinelRef, inView } = useInView({
     root: scrollRoot,
@@ -79,6 +86,10 @@ const FileManager: FC<FileManagerProps> = ({
   });
   const [sharedWithMeTypeFilter, setSharedWithMeTypeFilter] =
     useState<SharedWithMeTypeFilter>("all");
+  const [breadcrumbSegments, setBreadcrumbSegments] = useState<BreadcrumbSegment[]>(() => [
+    { id: null, name: getViewTitle(currentView || "home") },
+  ]);
+
   const dispatch = useDispatch();
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
   const [createFolder, { isLoading: isFolderCreating }] =
@@ -160,6 +171,8 @@ const FileManager: FC<FileManagerProps> = ({
             "We're Sorry An unexpected error has occurred.",
           "error"
         );
+      } finally {
+        setHasFetchedForCurrentView(true);
       }
     },
     [queryArgs, offset, limit, hasMore, loadingPosts]
@@ -173,9 +186,36 @@ const FileManager: FC<FileManagerProps> = ({
   }, [loadMorePosts]);
 
 
+  // Hydrate breadcrumb from cookie and build full path (home > abc > xyz) in one effect to avoid race
+  useEffect(() => {
+    const view = currentView || "home";
+    const rootLabel = getViewTitle(view);
+    const rootSegment: BreadcrumbSegment = { id: null, name: rootLabel };
+
+    const fromCookie = getBreadcrumbFromCookie();
+    let segments: BreadcrumbSegment[];
+
+    if (!folderId) {
+      segments = [rootSegment];
+    } else if (fromCookie?.view === view && fromCookie.segments?.length) {
+      segments = fromCookie.segments;
+      const existingIndex = segments.findIndex((s) => s.id === folderId);
+      if (existingIndex >= 0) {
+        segments = segments.slice(0, existingIndex + 1);
+      } else {
+        segments = [...segments, { id: folderId, name: folderName || "Folder" }];
+      }
+    } else {
+      segments = [rootSegment, { id: folderId, name: folderName || "Folder" }];
+    }
+    setBreadcrumbSegments(segments);
+    setBreadcrumbCookie({ view, segments });
+  }, [currentView, folderId, folderName]);
+
   // Depend on route only so we don't run twice (currentView can lag and trigger trash + shared)
   useEffect(() => {
     if (skipFetchForSharedRedirect) return;
+    setHasFetchedForCurrentView(false);
     setOffset(0);
     setHasMore(true);
     addFile([]);
@@ -337,6 +377,12 @@ const FileManager: FC<FileManagerProps> = ({
   const handleClickFolder = (folder: any) => {
     localStorage.setItem("folderPath", folder.path);
     addFile([]);
+    const nextSegments = [
+      ...breadcrumbSegments,
+      { id: folder.unique_key, name: folder.name },
+    ];
+    setBreadcrumbSegments(nextSegments);
+    setBreadcrumbCookie({ view: currentView || "home", segments: nextSegments });
     const baseRoute = getRouteFromView(currentView);
     navigate(`/${baseRoute}/${folder.unique_key}`, {
       state: { folderName: folder.name, folderPath: folder.path },
@@ -345,8 +391,32 @@ const FileManager: FC<FileManagerProps> = ({
 
   const handleBack = () => {
     addFile([]);
-    // const baseRoute = getRouteFromView(currentView);
+    if (breadcrumbSegments.length > 1) {
+      const next = breadcrumbSegments.slice(0, -1);
+      setBreadcrumbSegments(next);
+      setBreadcrumbCookie({ view: currentView || "Home", segments: next });
+    }
     navigate(-1);
+  };
+
+  const handleBreadcrumbClick = (segment: BreadcrumbSegment) => {
+    if (segment.id === null) {
+      addFile([]);
+      const next = [{ id: null, name: getViewTitle(currentView || "home") }];
+      setBreadcrumbSegments(next);
+      setBreadcrumbCookie({ view: currentView || "Home", segments: next });
+      navigate(`/${getRouteFromView(currentView)}`);
+      return;
+    }
+    const index = breadcrumbSegments.findIndex((s) => s.id === segment.id);
+    if (index < 0) return;
+    addFile([]);
+    const next = breadcrumbSegments.slice(0, index + 1);
+    setBreadcrumbSegments(next);
+    setBreadcrumbCookie({ view: currentView || "Home", segments: next });
+    navigate(`/${getRouteFromView(currentView)}/${segment.id}`, {
+      state: { folderName: segment.name },
+    });
   };
 
   useEffect(() => {
@@ -542,6 +612,8 @@ const FileManager: FC<FileManagerProps> = ({
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         folder={folderName}
+        breadcrumbSegments={breadcrumbSegments}
+        onBreadcrumbClick={handleBreadcrumbClick}
         onBack={handleBack}
         onRefresh={refetch}
         isRefreshing={isFetchingFiles || isFetching}
@@ -575,7 +647,7 @@ const FileManager: FC<FileManagerProps> = ({
               flexDirection: "column",
             }}
           >
-            {isFetchingFiles ? (
+            {isFetchingFiles || ((filteredFiles?.length ?? 0) === 0 && !hasFetchedForCurrentView) ? (
               <Box
                 sx={{
                   width: "100%",
@@ -587,6 +659,8 @@ const FileManager: FC<FileManagerProps> = ({
               >
                 <CircularProgress />
               </Box>
+            ) : (filteredFiles?.length ?? 0) === 0 && hasFetchedForCurrentView ? (
+              <EmptyState currentView={currentView} />
             ) : (
               <>
                 <FileListView
@@ -625,7 +699,7 @@ const FileManager: FC<FileManagerProps> = ({
               flexDirection: "column",
             }}
           >
-            {isFetchingFiles ? (
+            {isFetchingFiles || ((filteredFiles?.length ?? 0) === 0 && !hasFetchedForCurrentView) ? (
               <Box
                 sx={{
                   width: "100%",
@@ -637,6 +711,8 @@ const FileManager: FC<FileManagerProps> = ({
               >
                 <CircularProgress />
               </Box>
+            ) : (filteredFiles?.length ?? 0) === 0 && hasFetchedForCurrentView ? (
+              <EmptyState currentView={currentView} />
             ) : (
               <>
                 <FileGridView

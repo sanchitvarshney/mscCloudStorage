@@ -40,11 +40,18 @@ const FileItemCard: FC<FileItemCardProps> = ({
     restoringFileId,
     isDownloading,
     downloadingFileId,
+    isDeleting,
+    deletingFileId,
+    isFavoriting,
+    favoritingFileId,
   } = useSelector((state: any) => state.loadingState);
   const isFileViewing = isViewing && viewingFileId === file?.unique_key;
   const isFileRestoring = isRestoring && restoringFileId === file?.unique_key;
   const isFileDownloading =
     isDownloading && downloadingFileId === file?.unique_key;
+  const isFileDeleting = isDeleting && deletingFileId === file?.unique_key;
+  const isFileFavoriting = isFavoriting && favoritingFileId === file?.unique_key;
+  const isFileBusy = isFileDeleting || isFileFavoriting;
 
   useEffect(() => {
     if (isDownloading) {
@@ -84,8 +91,8 @@ const FileItemCard: FC<FileItemCardProps> = ({
         backgroundColor: "#edf4fb",
         position: "relative",
         overflow: "hidden",
-        opacity: isFileRestoring ? 0.6 : 1,
-        pointerEvents: isFileRestoring ? "none" : "auto",
+        opacity: isFileRestoring || isFileBusy ? 0.6 : 1,
+        pointerEvents: isFileRestoring || isFileBusy ? "none" : "auto",
         transition: "opacity 0.2s ease",
         cursor:
           currentView === "trash" || file?.type === "file"
@@ -124,11 +131,33 @@ const FileItemCard: FC<FileItemCardProps> = ({
             e.stopPropagation();
             onMenuClick(e, file);
           }}
-          disabled={isFileRestoring}
+          disabled={isFileRestoring || isFileBusy}
         >
-          <MoreVert fontSize="small" />
+          {isFileBusy ? (
+            <CircularProgress size={18} sx={{ color: "#5f6368" }} />
+          ) : (
+            <MoreVert fontSize="small" />
+          )}
         </IconButton>
       </Box>
+      {isFileBusy && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "rgba(255,255,255,0.7)",
+            zIndex: 2,
+          }}
+        >
+          <CircularProgress size={32} />
+        </Box>
+      )}
       <CardContent
         onMouseEnter={() => setIsHover(true)}
         onMouseLeave={() => setIsHover(false)}

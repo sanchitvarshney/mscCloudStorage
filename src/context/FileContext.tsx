@@ -5,7 +5,7 @@ import { getViewFromRoute } from "../utils/routeMapping";
 function getInitialViewFromUrl(): ViewType {
   if (typeof window === "undefined") return "home";
   const path = window.location.pathname || "";
-  const route = path.split("/").filter(Boolean)[0] || "home";
+  const route = path.split("/").filter(Boolean)[0] || "Home";
   return getViewFromRoute(route);
 }
 
@@ -30,10 +30,6 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({
   const [files, setFiles] = useState<any[]>([]);
   const [currentView, setCurrentView] = useState<ViewType>(getInitialViewFromUrl);
   const [searchQuery, setSearchQuery] = useState<string>("");
-
-
- 
-  
 
 
   const addFile = (files: any[]) => {

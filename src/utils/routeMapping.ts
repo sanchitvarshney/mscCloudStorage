@@ -21,9 +21,9 @@ export const viewToRouteMap: Record<ViewType, string> = {
 };
 
 export const getViewFromRoute = (route: string): ViewType => {
-  return routeToViewMap[route] || 'home';
+  return routeToViewMap[route] || 'Home';
 };
 
 export const getRouteFromView = (view: ViewType): string => {
-  return viewToRouteMap[view] || 'home';
+  return viewToRouteMap[view] || 'Home';
 };

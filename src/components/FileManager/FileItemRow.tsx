@@ -40,11 +40,18 @@ const FileItemRow: FC<FileItemRowProps> = ({
     restoringFileId,
     isDownloading,
     downloadingFileId,
+    isDeleting,
+    deletingFileId,
+    isFavoriting,
+    favoritingFileId,
   } = useSelector((state: any) => state.loadingState);
   const isFileViewing = isViewing && viewingFileId === file?.unique_key;
   const isFileRestoring = isRestoring && restoringFileId === file?.unique_key;
   const isFileDownloading =
     isDownloading && downloadingFileId === file?.unique_key;
+  const isFileDeleting = isDeleting && deletingFileId === file?.unique_key;
+  const isFileFavoriting = isFavoriting && favoritingFileId === file?.unique_key;
+  const isFileBusy = isFileDeleting || isFileFavoriting;
   const { currentView } = useFileContext();
 
   useEffect(() => {
@@ -85,8 +92,8 @@ const FileItemRow: FC<FileItemRowProps> = ({
           },
           cursor: "pointer",
           position: "relative",
-          opacity: isFileRestoring ? 0.6 : 1,
-          pointerEvents: isFileRestoring ? "none" : "auto",
+          opacity: isFileRestoring || isFileBusy ? 0.6 : 1,
+          pointerEvents: isFileRestoring || isFileBusy ? "none" : "auto",
           transition: "opacity 0.2s ease",
         }}
       >
@@ -194,12 +201,14 @@ const FileItemRow: FC<FileItemRowProps> = ({
               onClick={(e) => {
                 e.stopPropagation();
               }}
-              disabled={isFileRestoring}
+              disabled={isFileRestoring || isFileBusy}
               sx={{
                 p: 0.5,
               }}
             >
-              {isFileRestoring ? (
+              {isFileBusy ? (
+                <CircularProgress size={16} />
+              ) : isFileRestoring ? (
                 <CircularProgress size={16} />
               ) : (
                 <MoreVert fontSize="small" />
@@ -219,8 +228,8 @@ const FileItemRow: FC<FileItemRowProps> = ({
         "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.02)" },
         cursor: "pointer",
         position: "relative",
-        opacity: isFileRestoring ? 0.6 : 1,
-        pointerEvents: isFileRestoring ? "none" : "auto",
+        opacity: isFileRestoring || isFileBusy ? 0.6 : 1,
+        pointerEvents: isFileRestoring || isFileBusy ? "none" : "auto",
         transition: "opacity 0.2s ease",
       }}
     >
@@ -304,9 +313,11 @@ const FileItemRow: FC<FileItemRowProps> = ({
               e.stopPropagation();
               onMenuClick(e, file);
             }}
-            disabled={isFileRestoring}
+            disabled={isFileRestoring || isFileBusy}
           >
-            {isFileRestoring ? (
+            {isFileBusy ? (
+              <CircularProgress size={16} />
+            ) : isFileRestoring ? (
               <CircularProgress size={16} />
             ) : (
               <MoreVert fontSize="small" />
