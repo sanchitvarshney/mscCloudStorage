@@ -30,6 +30,7 @@ import {
 import { FileItem } from "../../types";
 import { debounce } from "../../utils";
 import {
+  useLazyOnfetchSharedDataQuery,
   useOnSearchUserMutation,
   useOnShareLinkMutation,
 } from "../../services/dirManager/dirServices";
@@ -55,18 +56,22 @@ interface SearchUserItem {
 }
 
 const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
+
   const [searchQuery, setSearchQuery] = useState("");
   const { showToast } = useToast();
   const [generalAccess, setGeneralAccess] = useState<"anyone" | "restricted">(
     "restricted",
   );
   const [peopleWithAccess, setPeopleWithAccess] = useState<PersonAccess[]>([]);
+    const [alreadyShared, setAlreadyShared] = useState<any[]>([]);
   // const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   // const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
   const [shareLinkUrl, setShareLinkUrl] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
   const [expiresAt, setExpiresAt] = useState<string>("");
+    const [key, setKey] = useState<string>("");
   const [fieldError, setFieldError] = useState<string>("");
+  const [triggerFetchSharedData] = useLazyOnfetchSharedDataQuery()
 
   const [
     triggerSearchUser,
@@ -80,7 +85,7 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
 
   const debouncedSearch = useMemo(
     () =>
-      debounce((query: string) => {
+      debounce((query: any) => {
         if (query.trim()) {
           triggerSearchUser({ search: query.trim() });
         }
@@ -95,6 +100,34 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
     },
     [debouncedSearch],
   );
+
+const handleFetchSharedData = async (unique_key: string) => {
+ try {
+   const res = await triggerFetchSharedData({key: unique_key})
+   console.log(res?.data,"data")
+   const {shared_users, success, is_restrict, shareURL, key} = res?.data
+ if (success ) {
+   
+   setAlreadyShared(shared_users)
+   setGeneralAccess(() => {
+     return is_restrict !== "Y" ? "anyone" : "restricted"
+   })
+   setShareLinkUrl(shareURL)
+setKey(key)
+ }
+  
+ } catch (error) {
+  
+ }
+}
+  useEffect(() => {
+    if (file as any && open) {
+      
+      //@ts-ignore
+      handleFetchSharedData(file.unique_key)
+    }
+  }, [file, open])
+  
 
   const filteredPeople = useMemo((): SearchUserItem[] => {
     if (!searchQuery.trim()) return [];
@@ -217,12 +250,15 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
   const handleShare = async () => {
     setFieldError("");
     const hasPeople = peopleWithAccess?.length > 0;
-    const sharedIds = peopleWithAccess?.map((p) => p.key).filter(Boolean) ?? [];
+    const sharedData = peopleWithAccess?.map((p) => p.key).filter(Boolean) ?? [];
+    const alreadyData = alreadyShared?.map((p) => p.user_id).filter(Boolean) ?? [];
+    const sharedIds = [...sharedData, ...alreadyData];
     if ((!hasPeople || sharedIds.length === 0) && generalAccess !== "anyone") {
       setFieldError("Field required");
       return;
     }
     const payload = {
+      shared_key: key,
       file_key: file?.type === "file" ? file?.unique_key : "",
       folder_key: file?.type === "folder" ? file?.unique_key : "",
       restrict: generalAccess === "anyone" ? "N" : "Y",
@@ -390,6 +426,41 @@ const ShareDialog: FC<ShareDialogProps> = ({ open, onClose, file }) => {
               }}
             />
           </Box>
+          {alreadyShared?.length > 0 && <Divider sx={{ my: 2 }} />}
+               {alreadyShared?.map((person, index) => (
+              <Box key={person.email}>
+                <ListItem sx={{ px: 0, py: 1 }}>
+                  <ListItemAvatar>
+                    <Avatar
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        bgcolor: "#34a853",
+                        fontSize: "14px",
+                      }}
+                    >
+                      {(person.name || person.email).charAt(0).toUpperCase()}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {person.userName ?? "-" }
+                      </Typography>
+                    }
+                    secondary={
+                      person.name && (
+                        <Typography variant="caption" sx={{ color: "#5f6368" }}>
+                          {person.email}
+                        </Typography>
+                      )
+                    }
+                  />
+                 
+                </ListItem>
+                {index < peopleWithAccess.length - 1 && <Divider />}
+              </Box>
+            ))}
         </Box>
 
         {/* Expires at */}

@@ -3,18 +3,21 @@ import { useInView } from "react-intersection-observer";
 import { Box, CircularProgress } from "@mui/material";
 import { useFileContext } from "../context/FileContext";
 import { FileItem } from "../types";
-import FileManagerHeader, { SharedWithMeTypeFilter } from "./FileManager/FileManagerHeader";
+import FileManagerHeader, {
+  SharedWithMeTypeFilter,
+} from "./FileManager/FileManagerHeader";
 import FileListView from "./FileManager/FileListView";
 import FileGridView from "./FileManager/FileGridView";
 import FileContextMenu from "./FileManager/FileContextMenu";
 import CreateFolderDialog from "./FileManager/CreateFolderDialog";
 import ShareDialog from "./FileManager/ShareDialog";
-import EmptyState from "./FileManager/EmptyState";
+// import EmptyState from "./FileManager/EmptyState";
 import DeleteConfirmationDialog from "./reuseable/DeleteConfirmationDialog";
 import {
   useCreateFolderMutation,
   useLazyFetchFilesQuery,
   useOnDeleteFileMutation,
+  useOnDeletePermanentlyMutation,
   useOnFaviroteFileMutation,
   useOnRestoreFileMutation,
   useUploadFilesMutation,
@@ -38,17 +41,19 @@ interface FileManagerProps {
   linkData?: any;
   /** When true (e.g. home?key=xxx), skip folder list fetch until redirect to shared-with-me */
   skipFetchForSharedRedirect?: boolean;
-
 }
 
-const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect }) => {
+const FileManager: FC<FileManagerProps> = ({
+  folder,
+  skipFetchForSharedRedirect,
+}) => {
   const { showToast } = useToast();
   const location = useLocation();
   //@ts-ignore
   const { folderId, folderName, folderPath } = folder ?? {};
 
   const navigate = useNavigate();
-  const { currentView,  addFile, files } = useFileContext();
+  const { currentView, addFile, files } = useFileContext();
 
   // Derive view from URL only — avoids trash + shared both firing when currentView is stale
   const routeSegment =
@@ -56,10 +61,10 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
   const isSharedFromRoute = routeSegment === "shared-with-me";
   const isTrashFromRoute = routeSegment === "trash";
 
-
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+   const [trashDialogOpen, setTrashDialogOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<any | null>(null);
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
@@ -80,16 +85,13 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
     useCreateFolderMutation();
   const [uploadFiles, { isLoading: isUploading }] = useUploadFilesMutation();
   const [viewFile] = useViewFileMutation();
+  const [onDeletePermanently] = useOnDeletePermanentlyMutation();
 
   useEffect(() => {
     if (isUploading) {
       showToast("Working please wait ....", "success", isUploading);
     }
- 
   }, [isUploading]);
-
-
-  
 
   const queryArgs = useCallback(async () => {
     const args: {
@@ -123,7 +125,8 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
     }
   }, []);
 
-  const [fetchFiles, { isLoading: loadingPosts, isFetching }] = useLazyFetchFilesQuery();
+  const [fetchFiles, { isLoading: loadingPosts, isFetching }] =
+    useLazyFetchFilesQuery();
 
   // Decrypted API response: { message, success, data, hasMore, nextOffset }
   const loadMorePosts = useCallback(
@@ -186,7 +189,7 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
     }
   }, [inView, hasMore, loadingPosts]);
 
-  const isFetchingFiles = loadingPosts || isFetching;
+  const isFetchingFiles = loadingPosts ;
 
   const [onDeleteFile] = useOnDeleteFileMutation();
   const [onRestoreFile] = useOnRestoreFileMutation();
@@ -212,6 +215,31 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
       if (res.success) {
         showToast(res.message, "success");
         refetch();
+        setTrashDialogOpen(false);
+        setFileToDelete(null);
+      } else {
+        showToast(res.message, "error");
+      }
+    } catch (err) {
+      showToast("Failed to delete file", "error");
+    } finally {
+      dispatch(setDeleting({ loading: false, fileId: null }));
+    }
+  };
+
+  const handleDeletePermanently = async (file: any) => {
+   
+    const payload = {
+      unique_key: file.unique_key,
+      type: file.type,
+    };
+
+    dispatch(setDeleting({ loading: true, fileId: file.unique_key }));
+    try {
+      const res: any = await onDeletePermanently(payload).unwrap();
+      if (res.success) {
+        showToast(res.message, "success");
+        refetch();
         setDeleteDialogOpen(false);
         setFileToDelete(null);
       } else {
@@ -226,6 +254,11 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
 
   const handleDeleteClick = (file: any) => {
     setFileToDelete(file);
+    setTrashDialogOpen(true);
+    handleMenuClose();
+  };
+  const handleDeletePermanentlyClick = (file: any) => {
+    setFileToDelete(file);
     setDeleteDialogOpen(true);
     handleMenuClose();
   };
@@ -233,6 +266,11 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
   const handleConfirmDelete = () => {
     if (fileToDelete) {
       handleTrashFile(fileToDelete);
+    }
+  };
+  const handleConfirmDeletePermanently = () => {
+    if (fileToDelete) {
+      handleDeletePermanently(fileToDelete);
     }
   };
 
@@ -372,8 +410,6 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
   };
 
   const filteredFiles = files?.filter((file: any) => {
-  
-
     if (folderId || folderName) {
       return !file.trash;
     }
@@ -381,9 +417,11 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
       case "home":
         return !file.trash && !file.isSpam;
 
-    
       case "sharedWithMe": {
-        if (sharedWithMeTypeFilter !== "all" && file.type !== sharedWithMeTypeFilter) {
+        if (
+          sharedWithMeTypeFilter !== "all" &&
+          file.type !== sharedWithMeTypeFilter
+        ) {
           return false;
         }
         return true;
@@ -429,7 +467,10 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
     }
     dispatch(setDownloading({ loading: true, fileId: file.unique_key }));
     try {
-      const blob = await viewFile({ file_key: file.unique_key, type: "list" }).unwrap();
+      const blob = await viewFile({
+        file_key: file.unique_key,
+        type: "list",
+      }).unwrap();
       if (!blob) {
         showToast("No file data received", "error");
         return;
@@ -504,19 +545,31 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
         onBack={handleBack}
         onRefresh={refetch}
         isRefreshing={isFetchingFiles || isFetching}
-                sharedWithMeTypeFilter={sharedWithMeTypeFilter}
+        sharedWithMeTypeFilter={sharedWithMeTypeFilter}
         onSharedWithMeTypeFilterChange={setSharedWithMeTypeFilter}
       />
 
-      <Box sx={{ p: 3 }}>
-        {filteredFiles.length === 0 && !isFetchingFiles ? (
-          <EmptyState currentView={currentView} />
-        ) : viewMode === "list" ? (
+      <Box
+        sx={{
+          p: 1,
+          // height: 300,
+          backgroundImage: `
+      url('/top-image.png'),
+      url('/bottom-image.png')
+    `,
+          backgroundRepeat: "repeat, no-repeat",
+          backgroundPosition: "top center, bottom center",
+          backgroundSize: "contain, contain",
+        }}
+      >
+        { viewMode === "list" ? (
           <Box
-            ref={(el: unknown) => setScrollRoot(el instanceof Element ? el : null)}
+            ref={(el: unknown) =>
+              setScrollRoot(el instanceof Element ? el : null)
+            }
             sx={{
-              maxHeight: "calc(100vh - 170px)",
-              minHeight: "calc(100vh - 170px)",
+              maxHeight: "calc(100vh - 150px)",
+              minHeight: "calc(100vh - 150px)",
               overflow: "auto",
               display: "flex",
               flexDirection: "column",
@@ -544,9 +597,15 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
                   onView={handleView}
                   onClickFolder={handleClickFolder}
                 />
-                <div ref={loadMoreSentinelRef} style={{ height: 1, minHeight: 1 }} aria-hidden="true" />
+                <div
+                  ref={loadMoreSentinelRef}
+                  style={{ height: 1, minHeight: 1 }}
+                  aria-hidden="true"
+                />
                 {hasMore && loadingPosts && (
-                  <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
+                  <Box
+                    sx={{ display: "flex", justifyContent: "center", py: 2 }}
+                  >
                     <CircularProgress size={24} />
                   </Box>
                 )}
@@ -555,10 +614,12 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
           </Box>
         ) : (
           <Box
-            ref={(el: unknown) => setScrollRoot(el instanceof Element ? el : null)}
+            ref={(el: unknown) =>
+              setScrollRoot(el instanceof Element ? el : null)
+            }
             sx={{
-              maxHeight: "calc(100vh - 170px)",
-              minHeight: "calc(100vh - 170px)",
+              maxHeight: "calc(100vh - 150px)",
+              minHeight: "calc(100vh - 150px)",
               overflow: "auto",
               display: "flex",
               flexDirection: "column",
@@ -585,9 +646,15 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
                   onView={handleView}
                   onClickFolder={handleClickFolder}
                 />
-                <div ref={loadMoreSentinelRef} style={{ height: 1, minHeight: 1 }} aria-hidden="true" />
+                <div
+                  ref={loadMoreSentinelRef}
+                  style={{ height: 1, minHeight: 1 }}
+                  aria-hidden="true"
+                />
                 {hasMore && loadingPosts && (
-                  <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
+                  <Box
+                    sx={{ display: "flex", justifyContent: "center", py: 2 }}
+                  >
                     <CircularProgress size={24} />
                   </Box>
                 )}
@@ -608,6 +675,7 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
         onToggleFavourite={handleFavouriteFile}
         onRestore={handleRestoreFile}
         onDelete={handleDeleteClick}
+        onDeletePermanently={handleDeletePermanentlyClick}
       />
 
       <CreateFolderDialog
@@ -625,13 +693,27 @@ const FileManager: FC<FileManagerProps> = ({ folder, skipFetchForSharedRedirect 
         file={selectedFile}
       />
 
+        <DeleteConfirmationDialog
+        open={trashDialogOpen}
+        onClose={() => {
+          setTrashDialogOpen(false);
+          setFileToDelete(null);
+        }}
+        
+         onConfirm={handleConfirmDelete}
+        itemName={fileToDelete?.name}
+        itemType={fileToDelete?.type || "item"}
+        isLoading={isDeleting && deletingFileId === fileToDelete?.unique_key}
+      />
+
       <DeleteConfirmationDialog
         open={deleteDialogOpen}
         onClose={() => {
           setDeleteDialogOpen(false);
           setFileToDelete(null);
         }}
-        onConfirm={handleConfirmDelete}
+        message={`Are you sure you want to trash ${fileToDelete?.name || "this item"}? This can be deleted permanently`}
+         onConfirm={handleConfirmDeletePermanently}
         itemName={fileToDelete?.name}
         itemType={fileToDelete?.type || "item"}
         isLoading={isDeleting && deletingFileId === fileToDelete?.unique_key}

@@ -9,7 +9,7 @@ const EmptyState: FC<EmptyStateProps> = ({ currentView }) => {
   return (
     <Box
       sx={{
-        minHeight: "calc(100vh - 190px)",
+        minHeight: "calc(100vh - 170px)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",

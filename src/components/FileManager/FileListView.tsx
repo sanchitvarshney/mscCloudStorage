@@ -14,6 +14,7 @@ import { ArrowDownward, ArrowUpward } from "@mui/icons-material";
 import { FileItem } from "../../types";
 import FileItemRow from "./FileItemRow";
 import { groupFilesByDate } from "../../utils";
+import EmptyState from "./EmptyState";
 
 type SortBy = "modified" | "size" | null;
 type SortOrder = "asc" | "desc";
@@ -95,6 +96,14 @@ const FileListView: FC<FileListViewProps> = ({
       { label: "Last month", files: groupedFiles["Last month"] },
       { label: "Older", files: groupedFiles["Older"] },
     ];
+    if (files.length === 0) {
+      return (
+        <Box>
+          <EmptyState currentView={currentView} />
+        </Box>
+      );
+      
+    }
 
     return (
       <Box>

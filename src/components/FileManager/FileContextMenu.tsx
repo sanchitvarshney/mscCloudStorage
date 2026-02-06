@@ -7,6 +7,7 @@ import {
   Star,
   StarBorder,
   RestoreFromTrash,
+  DeleteForever,
 } from "@mui/icons-material";
 import { FileItem } from "../../types";
 import { useSelector } from "react-redux";
@@ -22,6 +23,7 @@ interface FileContextMenuProps {
   onToggleFavourite: (fileId: string) => void;
   onDelete: (file: any) => void;
   onRestore: (file: string) => void;
+  onDeletePermanently: (file: any) => void;
 }
 
 const FileContextMenu: FC<FileContextMenuProps> = ({
@@ -35,6 +37,7 @@ const FileContextMenu: FC<FileContextMenuProps> = ({
   onToggleFavourite,
   onRestore,
   onDelete,
+  onDeletePermanently,
 }) => {
   const {
     isDeleting,
@@ -52,8 +55,8 @@ const FileContextMenu: FC<FileContextMenuProps> = ({
 
   return (
     <Menu anchorEl={anchorEl} open={open} onClose={onClose}>
-      {currentView === "trash" ? (
-        <MenuItem
+      {currentView === "trash" ? ( <>
+      <MenuItem
           onClick={() => {
             if (file && !isFileRestoring) {
               onRestore(file);
@@ -69,6 +72,25 @@ const FileContextMenu: FC<FileContextMenuProps> = ({
           )}
           Restore
         </MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (file && !isDeleting) {
+              onDeletePermanently(file);
+             
+            }
+          }}
+          disabled={isDeleting}
+        >
+          {isDeleting ? (
+            <CircularProgress size={15} sx={{ mr: 1 }} />
+          ) : (
+            <DeleteForever sx={{ mr: 1 }} fontSize="small" />
+          )}
+          Delete Permanently
+        </MenuItem>
+      </>
+        
+        
       ) : (
         <>
           {file && file.type === "file" && (

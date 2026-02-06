@@ -2,6 +2,8 @@ import { FC } from "react";
 import { Grid } from "@mui/material";
 import { FileItem } from "../../types";
 import FileItemCard from "./FileItemCard";
+import EmptyState from "./EmptyState";
+import { useFileContext } from "../../context/FileContext";
 
 interface FileGridViewProps {
   files: FileItem[];
@@ -18,6 +20,8 @@ const FileGridView: FC<FileGridViewProps> = ({
   onView,
   onClickFolder,
 }) => {
+const {currentView} =  useFileContext();
+  if(files.length === 0) return <EmptyState currentView={currentView} />
   return (
     <Grid container spacing={2} sx={{ p: 1 }}>
       {files.map((file) => (

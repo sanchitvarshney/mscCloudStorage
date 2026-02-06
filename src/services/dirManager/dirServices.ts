@@ -38,7 +38,13 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
         }
 
         return {
-          url: isTrash ? "/folder/trash" : isShared  && !folderId  ? "/share/shared" :  isShared && folderId ? `/folder/list?type=share` : "/folder/list",
+          url: isTrash
+            ? "/folder/trash"
+            : isShared && !folderId
+              ? "/share/shared"
+              : isShared && folderId
+                ? `/folder/list?type=share`
+                : "/folder/list",
           method: "GET",
           params,
         };
@@ -71,13 +77,12 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
         responseHandler: (response: any) => response.blob(),
       }),
     }),
-        viewFolder: builder.mutation({
+    viewFolder: builder.mutation({
       query: ({ parent_key }) => ({
         url: `/folder/list?parent_key=${parent_key}&type=list`,
         method: "GET",
-
       }),
-        transformResponse: async (response: any) => {
+      transformResponse: async (response: any) => {
         if (
           !response ||
           typeof response !== "object" ||
@@ -119,7 +124,7 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
         method: "POST",
         body: credentials,
       }),
-         transformResponse: async (response: any) => {
+      transformResponse: async (response: any) => {
         if (
           !response ||
           typeof response !== "object" ||
@@ -162,15 +167,12 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
         return decryptedData(response);
       },
     }),
-  
+
     onSearchFiles: builder.query({
       query: ({ search }) => {
-  
-
         return {
           url: `/folder/search?search=${search}`,
           method: "GET",
-       
         };
       },
       transformResponse: async (response: any) => {
@@ -185,7 +187,48 @@ const extendedAuthApi = baseApiInstance.injectEndpoints({
         return decryptedData(response);
       },
     }),
- 
+
+    onfetchSharedData: builder.query({
+      query: ({ key }) => {
+        return {
+          url: `/share/share-user-list/${key}`,
+          method: "GET",
+        };
+      },
+      transformResponse: async (response: any) => {
+        if (
+          !response ||
+          typeof response !== "object" ||
+          !response.encryptedKey
+        ) {
+          return response;
+        }
+
+        const data: any = decryptedData(response);
+        return data;
+      },
+    }),
+    onDeletePermanently: builder.mutation({
+      query: async (credentials) => {
+        const encrypt = await encryptPayload(credentials);
+        return {
+          url: "/file/delete",
+          method: "DELETE",
+          body: encrypt,
+        };
+      },
+      transformResponse: async (response: any) => {
+        if (
+          !response ||
+          typeof response !== "object" ||
+          !response.encryptedKey
+        ) {
+          return response;
+        }
+
+        return decryptedData(response);
+      },
+    }),
   }),
   overrideExisting: false,
 });
@@ -201,7 +244,8 @@ export const {
   useOnSearchUserMutation,
   useOnShareLinkMutation,
   useFetchSharedFileInfoQuery,
-
+  useLazyOnfetchSharedDataQuery,
   useLazyOnSearchFilesQuery,
   useViewFolderMutation,
+  useOnDeletePermanentlyMutation,
 } = extendedAuthApi;
